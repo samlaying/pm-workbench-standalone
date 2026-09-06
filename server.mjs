@@ -36,14 +36,33 @@ async function loadModelConfig() {
   }
   return config;
 }
+async function loadProjectContext(projectPath) {
+  if (!projectPath) return '';
+  const coreFiles = ['项目上下文.md', '内部术语表.md', '项目工作记录.md', '任务.md', '猎聘agent-prd.md', '技术细节.md'];
+  const sections = [];
+  for (const file of coreFiles) {
+    try {
+      const fullPath = join(projectPath, file);
+      const content = await readFile(fullPath, 'utf8');
+      if (content.trim()) {
+        sections.push(`### 【${file}】\n${content.slice(0, 8000)}`);
+      }
+    } catch {}
+  }
+  return sections.join('\n\n');
+}
+
 async function modelReply(text, state) {
   const { baseUrl: base, apiKey: key, model } = await loadModelConfig();
   if (!base || !key) return { text: `已收到：${text}\n\n我会结合当前项目资料继续处理。`, cards: [] };
-  const response = await fetch(`${base.replace(/\/$/, '')}/chat/completions`, { method: 'POST', headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' }, body: JSON.stringify({ model, temperature: 0.2, messages: [{ role: 'system', content: '你是 PM Workbench 主 Agent。返回严格 JSON：{"text":"给用户的简洁回复","cards":[{"title":"标题","body":"完整 Markdown","icon":"📄","x":90,"y":80}]}。只有当用户请求产出 PRD、会议纪要、方案、任务画像或其他结构化成果时才新增 cards；当用户使用 @引用画板卡片并要求修改时，返回同 id 的更新卡片；text 只放摘要。' }, ...state.messages.slice(-12).map(m => ({ role: m.role, content: m.text })), { role: 'user', content: `${text}\n\n当前画板内容：${JSON.stringify(state.cards)}` }] }) });
+  const projectContext = await loadProjectContext(state.projectPath);
+  const systemPrompt = `你是 PM Workbench 主 Agent。你必须严格基于下方提供的【当前项目真实资料库】中的背景、业务术语、历史决策和实际文档内容来分析和回答用户，务必引用真实业务事实与文档中的专有名词，严禁脱离实际材料凭空编造。\n返回严格 JSON：{"text":"给用户的简洁回复","cards":[{"title":"标题","body":"完整 Markdown","icon":"📄","x":90,"y":80}]}。只有当用户请求产出 PRD、会议纪要、方案、任务画像或其他结构化成果时才新增 cards；当用户使用 @引用画板卡片并要求修改时，返回同 id 的更新卡片；text 只放摘要。\n\n【当前项目真实资料库】：\n${projectContext || '（暂未绑定项目或项目暂无核心文档）'}`;
+  const response = await fetch(`${base.replace(/\/$/, '')}/chat/completions`, { method: 'POST', headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' }, body: JSON.stringify({ model, temperature: 0.2, messages: [{ role: 'system', content: systemPrompt }, ...state.messages.slice(-12).map(m => ({ role: m.role, content: m.text })), { role: 'user', content: `${text}\n\n当前画板内容：${JSON.stringify(state.cards)}` }] }) });
   if (!response.ok) throw new Error(`模型服务返回 ${response.status}`);
   const payload = await response.json(); const raw = payload.choices?.[0]?.message?.content || '{}';
   try { const parsed = JSON.parse(raw.replace(/^```json\s*|\s*```$/g, '')); return { text: String(parsed.text || raw), cards: Array.isArray(parsed.cards) ? parsed.cards : [] }; } catch { return { text: raw, cards: [] }; }
 }
+
 function json(res, status, body) { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(body)); }
 async function body(req) { let text = ''; for await (const chunk of req) text += chunk; return text ? JSON.parse(text) : {}; }
 function classifyFile(file) {
@@ -111,8 +130,17 @@ const server = createServer(async (req, res) => {
       const input = await body(req); const state = await load(); const workflow = state.workflow;
       if (!workflow || workflow.status !== 'awaiting_confirmation') return json(res, 409, { error: '当前没有等待回答的工作流' });
       workflow.answer = String(input.answer || ''); workflow.status = 'running';
-      const results = await Promise.all(workflow.skills.map(async skill => ({ skill, text: `${skill} 已读取项目上下文，准备处理：${workflow.request}` })));
-      const merged = mergeSkillResults(results); workflow.document = merged.text; workflow.review = buildMentorReview(merged, workflow.skills); workflow.status = workflow.review.status === 'approved' ? 'approved' : 'needs_revision'; state.cards = [...state.cards, ...merged.cards]; state.messages.push({ role: 'assistant', text: merged.text, at: Date.now() }); await save(state); return json(res, 200, { workflow, cards: state.cards });
+      const prompt = `请调用所选技能 [${workflow.skills.join(', ')}]，严格依据当前绑定项目的真实文档资料，处理用户需求：“${workflow.request}”（用户偏好：${workflow.answer}）。请务必结合真实业务背景与术语产出详尽方案与画板卡片。`;
+      const reply = await modelReply(prompt, state);
+      workflow.document = reply.text;
+      workflow.review = buildMentorReview({ text: reply.text, cards: reply.cards }, workflow.skills);
+      workflow.status = workflow.review.status === 'approved' ? 'approved' : 'needs_revision';
+      if (reply.cards && reply.cards.length) {
+        state.cards = [...state.cards, ...reply.cards.map((c, i) => ({ id: `${Date.now()}-${i}`, ...c }))];
+      }
+      state.messages.push({ role: 'assistant', text: reply.text, at: Date.now() });
+      await save(state);
+      return json(res, 200, { workflow, cards: state.cards, text: reply.text });
     }
     if (req.method === 'POST' && url.pathname === '/api/cards') { const input = await body(req); const state = await load(); state.cards = input.cards || []; await save(state); return json(res, 200, state.cards); }
     if (req.method === 'GET') { const file = url.pathname === '/' ? '/index.html' : url.pathname; try { const content = await readFile(join(root, 'public', file)); const type = file.endsWith('.css') ? 'text/css' : file.endsWith('.js') ? 'text/javascript' : 'text/html'; res.writeHead(200, { 'content-type': `${type}; charset=utf-8`, 'cache-control': 'no-cache' }); return res.end(content); } catch {} }
@@ -123,4 +151,5 @@ const server = createServer(async (req, res) => {
   }
 });
 if (process.argv[1] === new URL(import.meta.url).pathname) server.listen(Number(process.env.PORT || 4317), '127.0.0.1', () => console.log(`PM Workbench: http://127.0.0.1:${process.env.PORT || 4317}`));
-export { parseCredentialRefs, resolveModelConfig, server, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults };
+export { parseCredentialRefs, resolveModelConfig, server, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, loadProjectContext, modelReply };
+

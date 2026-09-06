@@ -144,6 +144,26 @@ def resolve_model_config() -> dict[str, str]:
     }
 
 
+def load_project_context(project_path: str, max_chars_per_file: int = 8000) -> str:
+    if not project_path:
+        return ""
+    p = Path(project_path)
+    if not p.is_dir():
+        return ""
+    core_files = ["项目上下文.md", "内部术语表.md", "项目工作记录.md", "任务.md", "猎聘agent-prd.md", "技术细节.md"]
+    sections = []
+    for fname in core_files:
+        fpath = p / fname
+        if fpath.is_file():
+            try:
+                content = fpath.read_text("utf-8")
+                if content.strip():
+                    sections.append(f"### 【{fname}】\n{content[:max_chars_per_file]}")
+            except Exception:
+                pass
+    return "\n\n".join(sections)
+
+
 class WorkbenchClient:
     """Client for interacting with PM Workbench via HTTP or Local Storage fallback."""
 
@@ -224,7 +244,7 @@ class WorkbenchClient:
     def answer_workflow(self, answer: str = "draft") -> dict[str, Any]:
         if self.is_server_available() and not self.dry_run:
             try:
-                resp = requests.post(f"{self.base_url}/api/workflow/answer", json={"answer": answer}, timeout=30.0)
+                resp = requests.post(f"{self.base_url}/api/workflow/answer", json={"answer": answer}, timeout=120.0)
                 if resp.status_code == 200:
                     return resp.json()
             except Exception:
@@ -275,7 +295,7 @@ class WorkbenchClient:
                     if question and not reply_text:
                         ans_res = self.answer_workflow(auto_answer)
                         wf = ans_res.get("workflow", {})
-                        reply_text = wf.get("document", f"已确认范围并执行：{text}")
+                        reply_text = ans_res.get("text") or wf.get("document", "") or f"已确认范围并执行：{text}"
                         cards = ans_res.get("cards", cards)
                         return {
                             "text": reply_text,
@@ -289,8 +309,8 @@ class WorkbenchClient:
                 # If server call fails, fallback to local
                 pass
 
-        # Local execution
 
+        # Local execution
         state = self.load_local_state()
         state["messages"].append({"role": "user", "text": text, "at": int(time.time() * 1000)})
 
@@ -301,11 +321,13 @@ class WorkbenchClient:
         if not config["apiKey"] or not config["baseUrl"]:
             reply_text = f"已收到：{text}\n\n（离线模式）：我会结合当前项目资料继续处理。"
         else:
+            project_context = load_project_context(state.get("projectPath", ""))
             system_prompt = (
-                '你是 PM Workbench 主 Agent。返回严格 JSON：'
-                '{"text":"给用户的简洁回复","cards":[{"title":"标题","body":"完整 Markdown","icon":"📄","x":90,"y":80}]}。'
+                '你是 PM Workbench 主 Agent。你必须严格基于下方提供的【当前项目真实资料库】中的背景、业务术语、历史决策和实际文档内容来分析和回答用户，务必引用真实业务事实与文档中的专有名词，严禁脱离实际材料凭空编造。\n'
+                '返回严格 JSON：{"text":"给用户的简洁回复","cards":[{"title":"标题","body":"完整 Markdown","icon":"📄","x":90,"y":80}]}。'
                 '只有当用户请求产出 PRD、会议纪要、方案、任务画像或其他结构化成果时才新增 cards；'
-                '当用户使用 @引用画板卡片并要求修改时，返回同 id 的更新卡片；text 只放摘要。'
+                '当用户使用 @引用画板卡片并要求修改时，返回同 id 的更新卡片；text 只放摘要。\n\n'
+                f'【当前项目真实资料库】：\n{project_context or "（暂未绑定项目或项目暂无核心文档）"}'
             )
             chat_messages = [{"role": "system", "content": system_prompt}]
             for m in state.get("messages", [])[-12:]:
@@ -314,6 +336,7 @@ class WorkbenchClient:
                 "role": "user",
                 "content": f"{text}\n\n当前画板内容：{json.dumps(state.get('cards', []), ensure_ascii=False)}"
             })
+
 
             try:
                 base = config["baseUrl"].rstrip("/")
