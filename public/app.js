@@ -35,6 +35,11 @@ function enableCanvasEditing() {
 }
 async function persistCards() { try { await request('/api/cards', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ cards: state.cards.map(cardData) }) }); } catch (error) { showError(`保存画布失败：${error.message}`); } }
 function wire() {
+  const footer = document.querySelector('.left footer');
+  if (footer) {
+    footer.innerHTML = '<button data-tool="terms">🏷 内部术语表</button><button data-tool="cross-project">◌ 跨项目工作记录</button><button data-tool="settings">⚙ Studio 偏好设置</button><button data-tool="profile">◌ 能力画像</button>';
+    footer.querySelectorAll('[data-tool]').forEach(button => button.addEventListener('click', () => showError(`${button.textContent.trim()}：功能入口已就绪，后续将在对应工作区打开。`)));
+  }
   const picker = document.querySelector('#project-picker');
   document.querySelector('#bind').onclick = () => picker?.click();
   picker?.addEventListener('change', async () => {

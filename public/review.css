@@ -1,6 +1,8 @@
 button { cursor: pointer; }
 .chat { min-height: 0; }
 .messages { min-height: 0; overflow-y: auto; overflow-x: hidden; }
+.left footer button { display: block; width: 100%; padding: 5px 0; border: 0; background: transparent; color: #526174; text-align: left; font: inherit; cursor: pointer; }
+.left footer button:hover { color: #4267e8; }
 .card > p[contenteditable="true"] { cursor: text; outline: 1px dashed transparent; }
 .card > p[contenteditable="true"]:focus { outline-color: #8ca8ff; background: #fbfcff; }
 button:disabled { cursor: wait; opacity: .55; }
