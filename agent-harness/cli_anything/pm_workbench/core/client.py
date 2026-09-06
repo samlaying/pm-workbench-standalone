@@ -1,0 +1,290 @@
+from __future__ import annotations
+
+import json
+import os
+import re
+import time
+from pathlib import Path
+from typing import Any
+
+import requests
+
+DEFAULT_URL = os.environ.get("PM_WORKBENCH_URL", "http://127.0.0.1:4317")
+
+
+def get_repo_root() -> Path:
+    env_root = os.environ.get("PM_WORKBENCH_ROOT")
+    if env_root:
+        return Path(env_root).resolve()
+    # By default, agent-harness/cli_anything/pm_workbench/core/client.py -> repo root is 4 levels up
+    current = Path(__file__).resolve().parent
+    # Check if we are inside pm-workbench-standalone/agent-harness
+    candidate = current.parents[3]
+    if (candidate / "server.mjs").exists() or (candidate / "package.json").exists():
+        return candidate
+    # Fallback to current working directory or /Users/sam/03-Code/02-Own/pm-workbench-standalone
+    fallback = Path("/Users/sam/03-Code/02-Own/pm-workbench-standalone")
+    if fallback.exists():
+        return fallback
+    return Path.cwd()
+
+
+def get_data_file() -> Path:
+    return get_repo_root() / "data" / "workspace.json"
+
+
+def scan_project(path_str: str) -> dict[str, Any]:
+    target_path = Path(path_str).resolve()
+    items = []
+
+    def walk(current_dir: Path, depth: int = 0):
+        if depth > 2 or not current_dir.is_dir():
+            return
+        try:
+            for entry in sorted(current_dir.iterdir(), key=lambda p: p.name):
+                if entry.name.startswith("."):
+                    continue
+                if entry.is_dir():
+                    walk(entry, depth + 1)
+                elif entry.suffix.lower() in [".md", ".txt", ".xml"]:
+                    full_str = str(entry.resolve())
+                    items.append({
+                        "id": full_str,
+                        "name": entry.name,
+                        "path": full_str,
+                        "type": "document"
+                    })
+        except Exception:
+            pass
+
+    if target_path.exists():
+        walk(target_path)
+
+    base_name = target_path.name or str(target_path)
+    return {
+        "id": base_name,
+        "name": base_name,
+        "path": str(target_path),
+        "items": items,
+    }
+
+
+def parse_credential_refs(text: str) -> dict[str, str]:
+    refs = {}
+    for line in text.splitlines():
+        match = re.match(r"^\s{2}([A-Z][A-Z0-9_]*):\s*(.*)$", line)
+        if match:
+            refs[match.group(1)] = match.group(2).strip().strip("'\"")
+    return refs
+
+
+def resolve_model_config() -> dict[str, str]:
+    base_url = os.environ.get("MODEL_BASE_URL", "http://192.227.138.214:8317/v1")
+    model = os.environ.get("MODEL_NAME", "gpt-5.5")
+    api_key = os.environ.get("MODEL_API_KEY") or os.environ.get("CLIPROXY_API_KEY")
+
+    if not api_key:
+        cred_file = Path.home() / ".dsh" / ".credentials.yaml"
+        if cred_file.exists():
+            try:
+                refs = parse_credential_refs(cred_file.read_text("utf-8"))
+                api_key = refs.get("CLIPROXY_API_KEY")
+            except Exception:
+                pass
+
+    return {
+        "baseUrl": base_url,
+        "model": model,
+        "apiKey": api_key or ""
+    }
+
+
+class WorkbenchClient:
+    """Client for interacting with PM Workbench via HTTP or Local Storage fallback."""
+
+    def __init__(self, base_url: str = DEFAULT_URL, dry_run: bool = False, force_local: bool = False):
+        self.base_url = base_url.rstrip("/")
+        self.dry_run = dry_run
+        self.force_local = force_local
+        self._server_available: bool | None = None
+
+    def is_server_available(self) -> bool:
+        if self.force_local:
+            return False
+        if self._server_available is not None:
+            return self._server_available
+        try:
+            resp = requests.get(f"{self.base_url}/api/state", timeout=0.6)
+            self._server_available = resp.status_code == 200
+        except Exception:
+            self._server_available = False
+        return self._server_available
+
+    def load_local_state(self) -> dict[str, Any]:
+        data_file = get_data_file()
+        if data_file.exists():
+            try:
+                return json.loads(data_file.read_text("utf-8"))
+            except Exception:
+                pass
+        return {"projectPath": "", "projects": [], "messages": [], "cards": []}
+
+    def save_local_state(self, state: dict[str, Any]) -> None:
+        if self.dry_run:
+            return
+        data_file = get_data_file()
+        data_file.parent.mkdir(parents=True, exist_ok=True)
+        data_file.write_text(json.dumps(state, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    def get_state(self) -> dict[str, Any]:
+        if self.is_server_available():
+            try:
+                resp = requests.get(f"{self.base_url}/api/state", timeout=2.0)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception:
+                pass
+        return self.load_local_state()
+
+    def bind_project(self, path_str: str) -> dict[str, Any]:
+        resolved_path = str(Path(path_str).resolve()) if path_str else ""
+        if self.is_server_available() and not self.dry_run:
+            try:
+                resp = requests.post(f"{self.base_url}/api/bind", json={"path": resolved_path}, timeout=5.0)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception:
+                pass
+
+        state = self.load_local_state()
+        state["projectPath"] = resolved_path
+        state["projects"] = [scan_project(resolved_path)] if resolved_path else []
+        self.save_local_state(state)
+        return state
+
+    def update_cards(self, cards: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        if self.is_server_available() and not self.dry_run:
+            try:
+                resp = requests.post(f"{self.base_url}/api/cards", json={"cards": cards}, timeout=5.0)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception:
+                pass
+
+        state = self.load_local_state()
+        state["cards"] = cards
+        self.save_local_state(state)
+        return state["cards"]
+
+    def send_message(self, text: str) -> dict[str, Any]:
+        """Send message and receive response and generated cards."""
+        text = text.strip()
+        if not text:
+            raise ValueError("Message cannot be empty")
+
+        if self.is_server_available() and not self.dry_run:
+            try:
+                resp = requests.post(
+                    f"{self.base_url}/api/message",
+                    json={"text": text},
+                    stream=True,
+                    timeout=60.0
+                )
+                if resp.status_code == 200:
+                    reply_text = ""
+                    cards = []
+                    for line in resp.iter_lines(decode_unicode=True):
+                        if not line or not line.startswith("data: "):
+                            continue
+                        event_data = line[6:].strip()
+                        try:
+                            parsed = json.loads(event_data)
+                            if parsed.get("type") == "text":
+                                reply_text += parsed.get("text", "")
+                            elif parsed.get("type") == "cards":
+                                cards = parsed.get("cards", [])
+                            elif parsed.get("type") == "error":
+                                raise RuntimeError(parsed.get("message", "Unknown error"))
+                        except json.JSONDecodeError:
+                            continue
+                    return {"text": reply_text, "cards": cards}
+            except Exception as e:
+                # If server call fails, fallback to local
+                pass
+
+        # Local execution
+        state = self.load_local_state()
+        state["messages"].append({"role": "user", "text": text, "at": int(time.time() * 1000)})
+
+        config = resolve_model_config()
+        reply_text = ""
+        new_cards = []
+
+        if not config["apiKey"] or not config["baseUrl"]:
+            reply_text = f"已收到：{text}\n\n（离线模式）：我会结合当前项目资料继续处理。"
+        else:
+            system_prompt = (
+                '你是 PM Workbench 主 Agent。返回严格 JSON：'
+                '{"text":"给用户的简洁回复","cards":[{"title":"标题","body":"完整 Markdown","icon":"📄","x":90,"y":80}]}。'
+                '只有当用户请求产出 PRD、会议纪要、方案、任务画像或其他结构化成果时才新增 cards；'
+                '当用户使用 @引用画板卡片并要求修改时，返回同 id 的更新卡片；text 只放摘要。'
+            )
+            chat_messages = [{"role": "system", "content": system_prompt}]
+            for m in state.get("messages", [])[-12:]:
+                chat_messages.append({"role": m["role"], "content": m["text"]})
+            chat_messages.append({
+                "role": "user",
+                "content": f"{text}\n\n当前画板内容：{json.dumps(state.get('cards', []), ensure_ascii=False)}"
+            })
+
+            try:
+                base = config["baseUrl"].rstrip("/")
+                resp = requests.post(
+                    f"{base}/chat/completions",
+                    headers={
+                        "authorization": f"Bearer {config['apiKey']}",
+                        "content-type": "application/json"
+                    },
+                    json={
+                        "model": config["model"],
+                        "temperature": 0.2,
+                        "messages": chat_messages
+                    },
+                    timeout=30.0
+                )
+                if resp.status_code == 200:
+                    payload = resp.json()
+                    raw = payload.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+                    raw_clean = re.sub(r"^```json\s*|\s*```$", "", raw.strip())
+                    try:
+                        parsed = json.loads(raw_clean)
+                        reply_text = str(parsed.get("text", raw))
+                        cards_val = parsed.get("cards", [])
+                        if isinstance(cards_val, list):
+                            new_cards = cards_val
+                    except Exception:
+                        reply_text = raw
+                else:
+                    reply_text = f"模型服务返回 HTTP {resp.status_code}"
+            except Exception as exc:
+                reply_text = f"模型请求失败：{exc}"
+
+        if new_cards:
+            now_ms = int(time.time() * 1000)
+            existing_cards = state.get("cards", [])
+            for i, c in enumerate(new_cards):
+                c_id = c.get("id") or f"{now_ms}-{i}"
+                # check if update
+                updated = False
+                for idx, ec in enumerate(existing_cards):
+                    if ec.get("id") == c_id:
+                        existing_cards[idx] = {**ec, **c}
+                        updated = True
+                        break
+                if not updated:
+                    existing_cards.append({"id": c_id, **c})
+            state["cards"] = existing_cards
+
+        state["messages"].append({"role": "assistant", "text": reply_text, "at": int(time.time() * 1000)})
+        self.save_local_state(state)
+        return {"text": reply_text, "cards": state.get("cards", [])}
