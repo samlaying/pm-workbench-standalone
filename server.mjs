@@ -1,0 +1,75 @@
+import { createServer } from 'node:http';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { resolve, join, basename } from 'node:path';
+import { homedir } from 'node:os';
+
+const root = new URL('.', import.meta.url).pathname;
+const dataFile = join(root, 'data', 'workspace.json');
+const initial = { projectPath: '', projects: [], messages: [], cards: [] };
+
+async function load() { try { return JSON.parse(await readFile(dataFile, 'utf8')); } catch { return structuredClone(initial); } }
+async function save(state) { await mkdir(join(root, 'data'), { recursive: true }); await writeFile(dataFile, JSON.stringify(state, null, 2) + '\n'); }
+function parseCredentialRefs(text) {
+  const refs = {};
+  for (const line of text.split('\n')) {
+    const match = line.match(/^\s{2}([A-Z][A-Z0-9_]*):\s*(.*)$/);
+    if (match) refs[match[1]] = match[2].trim().replace(/^['"]|['"]$/g, '');
+  }
+  return refs;
+}
+function resolveModelConfig(env = process.env) {
+  return {
+    baseUrl: env.MODEL_BASE_URL || 'http://192.227.138.214:8317/v1',
+    model: env.MODEL_NAME || 'gpt-5.5',
+    apiKeyEnv: 'CLIPROXY_API_KEY',
+    apiKey: env.MODEL_API_KEY || env.CLIPROXY_API_KEY,
+  };
+}
+async function loadModelConfig() {
+  const config = resolveModelConfig();
+  if (!config.apiKey) {
+    try {
+      const credentials = await readFile(join(homedir(), '.dsh', '.credentials.yaml'), 'utf8');
+      config.apiKey = parseCredentialRefs(credentials)[config.apiKeyEnv];
+    } catch {}
+  }
+  return config;
+}
+async function modelReply(text, state) {
+  const { baseUrl: base, apiKey: key, model } = await loadModelConfig();
+  if (!base || !key) return { text: `已收到：${text}\n\n我会结合当前项目资料继续处理。`, cards: [] };
+  const response = await fetch(`${base.replace(/\/$/, '')}/chat/completions`, { method: 'POST', headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' }, body: JSON.stringify({ model, temperature: 0.2, messages: [{ role: 'system', content: '你是 PM Workbench 主 Agent。返回严格 JSON：{"text":"给用户的简洁回复","cards":[{"title":"标题","body":"完整 Markdown","icon":"📄","x":90,"y":80}]}。只有当用户请求产出 PRD、会议纪要、方案、任务画像或其他结构化成果时才新增 cards；text 只放摘要。' }, ...state.messages.slice(-12).map(m => ({ role: m.role, content: m.text })), { role: 'user', content: text }] }) });
+  if (!response.ok) throw new Error(`模型服务返回 ${response.status}`);
+  const payload = await response.json(); const raw = payload.choices?.[0]?.message?.content || '{}';
+  try { const parsed = JSON.parse(raw.replace(/^```json\s*|\s*```$/g, '')); return { text: String(parsed.text || raw), cards: Array.isArray(parsed.cards) ? parsed.cards : [] }; } catch { return { text: raw, cards: [] }; }
+}
+function json(res, status, body) { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(body)); }
+async function body(req) { let text = ''; for await (const chunk of req) text += chunk; return text ? JSON.parse(text) : {}; }
+function scanProject(path) { return { id: basename(path), name: basename(path), path, items: [{ id: 'docs', name: '文档', type: 'group' }, { id: 'meetings', name: '会议', type: 'group' }, { id: 'notes', name: '工作记录', type: 'group' }] }; }
+
+const server = createServer(async (req, res) => {
+  try {
+    const url = new URL(req.url, 'http://localhost');
+    if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, await load());
+    if (req.method === 'POST' && url.pathname === '/api/bind') {
+      const input = await body(req); const path = resolve(String(input.path || ''));
+      const state = await load(); state.projectPath = path; state.projects = path ? [scanProject(path)] : []; await save(state); return json(res, 200, state);
+    }
+    if (req.method === 'POST' && url.pathname === '/api/message') {
+      const input = await body(req); const text = String(input.text || '').trim(); if (!text) return json(res, 400, { error: '消息不能为空' });
+      const state = await load(); state.messages.push({ role: 'user', text, at: Date.now() }); await save(state);
+      res.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache', connection: 'keep-alive' });
+      const result = await modelReply(text, state); for (const part of [result.text]) res.write(`data: ${JSON.stringify({ type: 'text', text: part })}\n\n`);
+      if (result.cards.length) { state.cards = [...state.cards, ...result.cards.map((card, i) => ({ id: `${Date.now()}-${i}`, ...card }))]; res.write(`data: ${JSON.stringify({ type: 'cards', cards: state.cards })}\n\n`); }
+      state.messages.push({ role: 'assistant', text: result.text, at: Date.now() }); await save(state); res.write('data: {"type":"done"}\n\n'); return res.end();
+    }
+    if (req.method === 'POST' && url.pathname === '/api/cards') { const input = await body(req); const state = await load(); state.cards = input.cards || []; await save(state); return json(res, 200, state.cards); }
+    if (req.method === 'GET') { const file = url.pathname === '/' ? '/index.html' : url.pathname; try { const content = await readFile(join(root, 'public', file)); const type = file.endsWith('.css') ? 'text/css' : file.endsWith('.js') ? 'text/javascript' : 'text/html'; res.writeHead(200, { 'content-type': `${type}; charset=utf-8`, 'cache-control': 'no-cache' }); return res.end(content); } catch {} }
+    json(res, 404, { error: 'Not found' });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '服务器错误';
+    if (res.headersSent) { res.write(`data: ${JSON.stringify({ type: 'error', message })}\n\n`); res.end(); } else json(res, 500, { error: message });
+  }
+});
+if (process.argv[1] === new URL(import.meta.url).pathname) server.listen(Number(process.env.PORT || 4317), '127.0.0.1', () => console.log(`PM Workbench: http://127.0.0.1:${process.env.PORT || 4317}`));
+export { parseCredentialRefs, resolveModelConfig, server, scanProject };
