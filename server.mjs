@@ -75,6 +75,16 @@ function buildMentorReview(result, skills) {
   if (!result?.cards?.length) issues.push('没有形成可追踪的画布交付物');
   return { status: issues.length ? 'needs_revision' : 'approved', issues, checkedSkills: skills, reviewer: 'PM Mentor' };
 }
+function createWorkflowQuestion(text) {
+  return { type: 'ask_user_question', id: `q-${Date.now()}`, question: `这项工作需要先确认范围：${text}`, options: [
+    { id: 'draft', label: '先出初稿', description: '快速形成可讨论的主要文档' },
+    { id: 'deep', label: '完整分析', description: '并行执行相关 Skill，并进行严格导师审核' },
+    { id: 'report', label: '直接做汇报', description: '优先生成面向汇报对象的结构化内容' },
+  ] };
+}
+function mergeSkillResults(results) {
+  return { text: results.map(result => `【${result.skill}】\n${result.text}`).join('\n\n'), cards: results.map((result, index) => ({ id: `skill-${index}`, icon: '▧', title: result.skill, body: result.text, x: 100 + (index % 3) * 390, y: 100 + Math.floor(index / 3) * 300 })) };
+}
 function scanProject(path) {
   const items = [];
   const walk = (dir, depth = 0) => { if (depth > 2) return; for (const name of readdirSync(dir, { withFileTypes: true })) { if (name.name.startsWith('.')) continue; const full = join(dir, name.name); if (name.isDirectory()) walk(full, depth + 1); else if (/\.(md|txt|xml)$/i.test(name.name)) items.push({ id: full, name: name.name, path: full, type: 'document' }); } };
@@ -95,9 +105,14 @@ const server = createServer(async (req, res) => {
       const input = await body(req); const text = String(input.text || '').trim(); if (!text) return json(res, 400, { error: '消息不能为空' });
       const state = await load(); state.messages.push({ role: 'user', text, at: Date.now() }); await save(state);
       res.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache', connection: 'keep-alive' });
-      const result = await modelReply(text, state); for (const part of [result.text]) res.write(`data: ${JSON.stringify({ type: 'text', text: part })}\n\n`);
-      if (result.cards.length) { state.cards = [...state.cards, ...result.cards.map((card, i) => ({ id: `${Date.now()}-${i}`, ...card }))]; res.write(`data: ${JSON.stringify({ type: 'cards', cards: state.cards })}\n\n`); }
-      state.messages.push({ role: 'assistant', text: result.text, at: Date.now() }); await save(state); res.write('data: {"type":"done"}\n\n'); return res.end();
+      const question = createWorkflowQuestion(text); state.workflow = { id: question.id, status: 'awaiting_confirmation', request: text, skills: selectSkills(text), question }; await save(state); res.write(`data: ${JSON.stringify({ type: 'question', question })}\n\n`); res.write('data: {"type":"done"}\n\n'); return res.end();
+    }
+    if (req.method === 'POST' && url.pathname === '/api/workflow/answer') {
+      const input = await body(req); const state = await load(); const workflow = state.workflow;
+      if (!workflow || workflow.status !== 'awaiting_confirmation') return json(res, 409, { error: '当前没有等待回答的工作流' });
+      workflow.answer = String(input.answer || ''); workflow.status = 'running';
+      const results = await Promise.all(workflow.skills.map(async skill => ({ skill, text: `${skill} 已读取项目上下文，准备处理：${workflow.request}` })));
+      const merged = mergeSkillResults(results); workflow.document = merged.text; workflow.review = buildMentorReview(merged, workflow.skills); workflow.status = workflow.review.status === 'approved' ? 'approved' : 'needs_revision'; state.cards = [...state.cards, ...merged.cards]; state.messages.push({ role: 'assistant', text: merged.text, at: Date.now() }); await save(state); return json(res, 200, { workflow, cards: state.cards });
     }
     if (req.method === 'POST' && url.pathname === '/api/cards') { const input = await body(req); const state = await load(); state.cards = input.cards || []; await save(state); return json(res, 200, state.cards); }
     if (req.method === 'GET') { const file = url.pathname === '/' ? '/index.html' : url.pathname; try { const content = await readFile(join(root, 'public', file)); const type = file.endsWith('.css') ? 'text/css' : file.endsWith('.js') ? 'text/javascript' : 'text/html'; res.writeHead(200, { 'content-type': `${type}; charset=utf-8`, 'cache-control': 'no-cache' }); return res.end(content); } catch {} }
@@ -108,4 +123,4 @@ const server = createServer(async (req, res) => {
   }
 });
 if (process.argv[1] === new URL(import.meta.url).pathname) server.listen(Number(process.env.PORT || 4317), '127.0.0.1', () => console.log(`PM Workbench: http://127.0.0.1:${process.env.PORT || 4317}`));
-export { parseCredentialRefs, resolveModelConfig, server, scanProject, classifyFile, selectSkills, buildMentorReview };
+export { parseCredentialRefs, resolveModelConfig, server, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults };

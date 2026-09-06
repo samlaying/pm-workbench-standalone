@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCredentialRefs, resolveModelConfig, scanProject, classifyFile, selectSkills, buildMentorReview } from '../server.mjs';
+import { parseCredentialRefs, resolveModelConfig, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults } from '../server.mjs';
 test('project binding creates a real project navigation model', () => { const p = scanProject('/tmp/pm'); assert.equal(p.name, 'pm'); assert.deepEqual(p.items.map(x => x.name), ['文档', '会议', '工作记录']); });
 
 test('model config matches the working DSH cliproxy setup', () => {
@@ -28,4 +28,16 @@ test('mentor review blocks delivery until strict checks pass', () => {
   const review = buildMentorReview({ text: '短文', cards: [] }, ['prd-writer']);
   assert.equal(review.status, 'needs_revision');
   assert.ok(review.issues.length > 0);
+});
+
+test('workflow creates a structured confirmation question before execution', () => {
+  const question = createWorkflowQuestion('请写一份 PRD 并汇报给老板');
+  assert.equal(question.type, 'ask_user_question');
+  assert.equal(question.options.length, 3);
+});
+
+test('parallel skill results merge into a document and canvas cards', () => {
+  const merged = mergeSkillResults([{ skill: 'prd-writer', text: '目标、范围、验收' }, { skill: 'update-writer', text: '进展与风险' }]);
+  assert.match(merged.text, /prd-writer/);
+  assert.equal(merged.cards.length, 2);
 });
