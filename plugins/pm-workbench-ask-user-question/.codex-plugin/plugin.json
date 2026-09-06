@@ -1,0 +1,18 @@
+{
+  "name": "pm-workbench-ask-user-question",
+  "version": "0.1.0",
+  "description": "Pm Workbench Ask User Question plugin",
+  "author": {
+    "name": "Local developer"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Pm Workbench Ask User Question",
+    "shortDescription": "Use Pm Workbench Ask User Question in Codex.",
+    "longDescription": "Pm Workbench Ask User Question adds a local Codex plugin scaffold.",
+    "developerName": "Local developer",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Help me use Pm Workbench Ask User Question."
+  }
+}

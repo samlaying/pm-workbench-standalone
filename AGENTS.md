@@ -14,3 +14,7 @@
 | `ai-pm-prd-builder` | AI / Agent 产品 PRD、节点契约和评测体系 |
 
 公共规则位于 `.agents/skills/_shared/`。项目初始化时优先读取 `项目上下文.md`、`内部术语表.md`、`项目工作记录.md` 和 `任务.md`。
+
+## PM Workbench 本地插件
+
+`plugins/pm-workbench-ask-user-question/` 提供独立的结构化提问能力。工作流在范围、优先级、汇报方式和导师采纳判断上必须暂停，等待该插件返回答案后再继续。
