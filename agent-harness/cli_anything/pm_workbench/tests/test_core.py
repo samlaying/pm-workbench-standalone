@@ -186,3 +186,28 @@ def test_dry_run_does_not_mutate(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     client = WorkbenchClient(force_local=True, dry_run=True)
     add_card(client, title="不会保存", body="Body")
     assert not mock_data_file.exists()
+
+
+def test_file_classification_and_skill_selection():
+    from cli_anything.pm_workbench.core.client import classify_file, select_skills
+
+    assert classify_file("会议纪要/2026-09-01.md")["type"] == "meeting"
+    assert classify_file("数据表.xlsx")["type"] == "table"
+    assert classify_file("架构图.mmd")["type"] == "flow"
+    assert classify_file("普通文档.md")["type"] == "document"
+
+    skills = select_skills("基于会议纪要写 PRD 并准备汇报")
+    assert "meeting-notes-organizer" in skills
+    assert "prd-writer" in skills
+    assert "update-writer" in skills
+
+
+def test_workflow_answer(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    mock_data_file = tmp_path / "data" / "workspace.json"
+    monkeypatch.setattr("cli_anything.pm_workbench.core.client.get_data_file", lambda: mock_data_file)
+
+    client = WorkbenchClient(force_local=True)
+    res = client.answer_workflow("deep")
+    assert res["workflow"]["status"] == "approved"
+    assert res["workflow"]["answer"] == "deep"
+

@@ -59,9 +59,19 @@ Collaborate with the PM Agent.
 
 | Command | Description |
 |---------|-------------|
-| `chat send <text>` | Send a message to PM Agent (returns reply text and canvas updates). |
+| `chat send <text> [--answer choice]` | Send a message to PM Agent (supports auto-answering workflow confirmations). |
 | `chat history [-n N]` | View recent conversation history. |
 | `chat clear` | Clear conversation history. |
+
+### Workflow (`workflow`)
+
+Manage PM workflow confirmation and skill execution.
+
+| Command | Description |
+|---------|-------------|
+| `workflow status` | View current pending workflow, question, and mentor review. |
+| `workflow answer <choice>` | Answer confirmation question (`draft`, `deep`, `report`). |
+
 
 ### Card (`card`)
 

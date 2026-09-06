@@ -153,21 +153,79 @@ def chat():
 
 @chat.command("send")
 @click.argument("text")
+@click.option("--answer", default="draft", help="Workflow confirmation answer ('draft', 'deep', 'report').")
 @click.pass_context
-def chat_send(ctx: click.Context, text: str):
+def chat_send(ctx: click.Context, text: str, answer: str):
     """Send a prompt or requirement to the PM Agent."""
     client: WorkbenchClient = ctx.obj["client"]
     skin: ReplSkin = ctx.obj["skin"]
-    result = send_chat_message(client, text)
+    result = client.send_message(text, auto_answer=answer)
 
     def show(res):
         reply = res.get("text", "")
         cards = res.get("cards", [])
+        wf = res.get("workflow")
+        if wf and "review" in wf:
+            skin.info(f"[导师审查: {wf['review'].get('status')}]")
         skin.info(f"\n{reply}\n")
         if cards:
             skin.success(f"当前画板共有 {len(cards)} 张卡片")
 
     print_output(ctx, result, show)
+
+
+# ── Workflow commands ─────────────────────────────────────────
+
+@cli.group()
+def workflow():
+    """Manage PM workflow confirmation and skill execution."""
+    pass
+
+
+@workflow.command("status")
+@click.pass_context
+def workflow_status(ctx: click.Context):
+    """View current pending workflow and mentor review status."""
+    client: WorkbenchClient = ctx.obj["client"]
+    skin: ReplSkin = ctx.obj["skin"]
+    state = client.get_state()
+    wf = state.get("workflow", {})
+
+    def show(w):
+        if not w:
+            skin.info("当前没有活动中的工作流")
+            return
+        skin.status("状态", w.get("status", "unknown"))
+        skin.status("请求", w.get("request", ""))
+        skin.status("调度技能", ", ".join(w.get("skills", [])))
+        if "question" in w:
+            skin.info(f"\n等待确认: {w['question'].get('question')}")
+        if "review" in w:
+            rev = w["review"]
+            skin.status("导师审核", f"{rev.get('status')} ({rev.get('reviewer')})")
+            for issue in rev.get("issues", []):
+                skin.warning(f"  - {issue}")
+
+    print_output(ctx, wf, show)
+
+
+@workflow.command("answer")
+@click.argument("choice", default="draft")
+@click.pass_context
+def workflow_answer(ctx: click.Context, choice: str):
+    """Answer pending workflow question (e.g. 'draft', 'deep', 'report')."""
+    client: WorkbenchClient = ctx.obj["client"]
+    skin: ReplSkin = ctx.obj["skin"]
+    res = client.answer_workflow(choice)
+
+    def show(r):
+        wf = r.get("workflow", {})
+        skin.success(f"工作流已执行，状态: {wf.get('status')}")
+        if "review" in wf:
+            skin.info(f"导师审核状态: {wf['review'].get('status')}")
+
+    print_output(ctx, res, show)
+
 
 
 @chat.command("history")

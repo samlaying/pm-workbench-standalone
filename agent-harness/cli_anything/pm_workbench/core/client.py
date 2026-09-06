@@ -33,6 +33,44 @@ def get_data_file() -> Path:
     return get_repo_root() / "data" / "workspace.json"
 
 
+def classify_file(file_path: str) -> dict[str, str]:
+    name = str(file_path).lower()
+    if re.search(r"会议|meeting|日会|周会", name):
+        return {"type": "meeting", "label": "会议纪要"}
+    if re.search(r"\.xlsx?$|\.csv$", name):
+        return {"type": "table", "label": "表格"}
+    if re.search(r"\.mmd$|\.mermaid$|流程图|flow", name):
+        return {"type": "flow", "label": "流程图"}
+    if re.search(r"人物|person|客户|老板", name):
+        return {"type": "person", "label": "人物"}
+    if re.search(r"任务|todo|task", name):
+        return {"type": "task", "label": "任务"}
+    if re.search(r"图片|截图|\.png$|\.jpe?g$|\.webp$", name):
+        return {"type": "image", "label": "图片"}
+    if re.search(r"术语|上下文|工作记录|memory|记忆", name):
+        return {"type": "memory", "label": "项目记忆"}
+    return {"type": "document", "label": "文档"}
+
+
+def select_skills(text: str) -> list[str]:
+    skills = []
+    if re.search(r"会议|纪要|录音|todo|行动项", text):
+        skills.append("meeting-notes-organizer")
+    if re.search(r"prd|需求文档|评审前|写需求", text, re.IGNORECASE):
+        skills.append("prd-writer")
+    if re.search(r"评审|反馈|验收标准", text):
+        skills.append("prd-review-handler")
+    if re.search(r"任务|推进|拆解|安排", text):
+        skills.append("task-arrangement-planner")
+    if re.search(r"汇报|通知|周报|同步|风险", text):
+        skills.append("update-writer")
+    if re.search(r"复盘|沟通表现", text):
+        skills.append("meeting-coach")
+    if re.search(r"ai|agent|大模型", text, re.IGNORECASE):
+        skills.append("ai-pm-prd-builder")
+    return list(dict.fromkeys(skills if skills else ["project-context-maintainer"]))
+
+
 def scan_project(path_str: str) -> dict[str, Any]:
     target_path = Path(path_str).resolve()
     items = []
@@ -46,13 +84,14 @@ def scan_project(path_str: str) -> dict[str, Any]:
                     continue
                 if entry.is_dir():
                     walk(entry, depth + 1)
-                elif entry.suffix.lower() in [".md", ".txt", ".xml"]:
+                elif entry.suffix.lower() in [".md", ".txt", ".xml", ".csv", ".mmd", ".mermaid"]:
                     full_str = str(entry.resolve())
+                    classified = classify_file(full_str)
                     items.append({
                         "id": full_str,
                         "name": entry.name,
                         "path": full_str,
-                        "type": "document"
+                        **classified
                     })
         except Exception:
             pass
@@ -61,12 +100,18 @@ def scan_project(path_str: str) -> dict[str, Any]:
         walk(target_path)
 
     base_name = target_path.name or str(target_path)
+    fallback = [
+        {"id": "docs", "name": "文档", "type": "group"},
+        {"id": "meetings", "name": "会议", "type": "group"},
+        {"id": "notes", "name": "工作记录", "type": "group"},
+    ]
     return {
         "id": base_name,
         "name": base_name,
         "path": str(target_path),
-        "items": items,
+        "items": items if items else fallback,
     }
+
 
 
 def parse_credential_refs(text: str) -> dict[str, str]:
@@ -176,7 +221,22 @@ class WorkbenchClient:
         self.save_local_state(state)
         return state["cards"]
 
-    def send_message(self, text: str) -> dict[str, Any]:
+    def answer_workflow(self, answer: str = "draft") -> dict[str, Any]:
+        if self.is_server_available() and not self.dry_run:
+            try:
+                resp = requests.post(f"{self.base_url}/api/workflow/answer", json={"answer": answer}, timeout=30.0)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception:
+                pass
+        state = self.load_local_state()
+        workflow = state.get("workflow", {})
+        workflow["status"] = "approved"
+        workflow["answer"] = answer
+        self.save_local_state(state)
+        return {"workflow": workflow, "cards": state.get("cards", [])}
+
+    def send_message(self, text: str, auto_answer: str = "draft") -> dict[str, Any]:
         """Send message and receive response and generated cards."""
         text = text.strip()
         if not text:
@@ -193,6 +253,7 @@ class WorkbenchClient:
                 if resp.status_code == 200:
                     reply_text = ""
                     cards = []
+                    question = None
                     for line in resp.iter_lines(decode_unicode=True):
                         if not line or not line.startswith("data: "):
                             continue
@@ -203,16 +264,33 @@ class WorkbenchClient:
                                 reply_text += parsed.get("text", "")
                             elif parsed.get("type") == "cards":
                                 cards = parsed.get("cards", [])
+                            elif parsed.get("type") == "question":
+                                question = parsed.get("question")
                             elif parsed.get("type") == "error":
                                 raise RuntimeError(parsed.get("message", "Unknown error"))
                         except json.JSONDecodeError:
                             continue
+
+                    # If server paused on question, auto-answer with specified choice
+                    if question and not reply_text:
+                        ans_res = self.answer_workflow(auto_answer)
+                        wf = ans_res.get("workflow", {})
+                        reply_text = wf.get("document", f"已确认范围并执行：{text}")
+                        cards = ans_res.get("cards", cards)
+                        return {
+                            "text": reply_text,
+                            "cards": cards,
+                            "workflow": wf,
+                            "question": question
+                        }
+
                     return {"text": reply_text, "cards": cards}
             except Exception as e:
                 # If server call fails, fallback to local
                 pass
 
         # Local execution
+
         state = self.load_local_state()
         state["messages"].append({"role": "user", "text": text, "at": int(time.time() * 1000)})
 

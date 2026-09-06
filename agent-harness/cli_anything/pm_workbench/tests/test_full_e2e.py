@@ -89,6 +89,15 @@ class TestClickRunnerE2E:
         assert res.exit_code == 0
         assert json.loads(res.output)["deleted"] is True
 
+        # Workflow status & answer
+        res = runner.invoke(cli, ["--offline", "--json", "workflow", "status"])
+        assert res.exit_code == 0
+
+        res = runner.invoke(cli, ["--offline", "--json", "workflow", "answer", "draft"])
+        assert res.exit_code == 0
+        assert json.loads(res.output)["workflow"]["status"] == "approved"
+
+
 
 class TestCLISubprocess:
     """Subprocess tests testing the resolved command line interface."""

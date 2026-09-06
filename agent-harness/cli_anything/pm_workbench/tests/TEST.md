@@ -29,20 +29,23 @@ CLI_ANYTHING_FORCE_INSTALLED=1 python3 -m pytest cli_anything/pm_workbench/tests
 ```
 ============================= test session starts ==============================
 platform darwin -- Python 3.14.6, pytest-9.1.0, pluggy-1.6.0
-collected 11 items
+collected 13 items
 
-cli_anything/pm_workbench/tests/test_core.py::test_parse_credential_refs PASSED [  9%]
-cli_anything/pm_workbench/tests/test_core.py::test_scan_project PASSED   [ 18%]
-cli_anything/pm_workbench/tests/test_core.py::test_client_local_state_and_cards PASSED [ 27%]
-cli_anything/pm_workbench/tests/test_core.py::test_client_chat_and_project_binding PASSED [ 36%]
-cli_anything/pm_workbench/tests/test_core.py::test_client_chat_mocked_model_reply PASSED [ 45%]
-cli_anything/pm_workbench/tests/test_core.py::test_dry_run_does_not_mutate PASSED [ 54%]
-cli_anything/pm_workbench/tests/test_full_e2e.py::TestClickRunnerE2E::test_cli_help PASSED [ 63%]
-cli_anything/pm_workbench/tests/test_full_e2e.py::TestClickRunnerE2E::test_project_and_cards_e2e PASSED [ 72%]
-cli_anything/pm_workbench/tests/test_full_e2e.py::TestCLISubprocess::test_subprocess_help PASSED [ 81%]
-cli_anything/pm_workbench/tests/test_full_e2e.py::TestCLISubprocess::test_subprocess_json_status PASSED [ 90%]
-cli_anything/pm_workbench/tests/test_full_e2e.py::TestCLISubprocess::test_subprocess_json_card_list PASSED [100%]
+agent-harness/cli_anything/pm_workbench/tests/test_core.py::test_parse_credential_refs PASSED [  7%]
+agent-harness/cli_anything/pm_workbench/tests/test_core.py::test_scan_project PASSED [ 15%]
+agent-harness/cli_anything/pm_workbench/tests/test_core.py::test_client_local_state_and_cards PASSED [ 23%]
+agent-harness/cli_anything/pm_workbench/tests/test_core.py::test_client_chat_and_project_binding PASSED [ 30%]
+agent-harness/cli_anything/pm_workbench/tests/test_core.py::test_client_chat_mocked_model_reply PASSED [ 38%]
+agent-harness/cli_anything/pm_workbench/tests/test_core.py::test_dry_run_does_not_mutate PASSED [ 46%]
+agent-harness/cli_anything/pm_workbench/tests/test_core.py::test_file_classification_and_skill_selection PASSED [ 53%]
+agent-harness/cli_anything/pm_workbench/tests/test_core.py::test_workflow_answer PASSED [ 61%]
+agent-harness/cli_anything/pm_workbench/tests/test_full_e2e.py::TestClickRunnerE2E::test_cli_help PASSED [ 69%]
+agent-harness/cli_anything/pm_workbench/tests/test_full_e2e.py::TestClickRunnerE2E::test_project_and_cards_e2e PASSED [ 76%]
+agent-harness/cli_anything/pm_workbench/tests/test_full_e2e.py::TestCLISubprocess::test_subprocess_help PASSED [ 84%]
+agent-harness/cli_anything/pm_workbench/tests/test_full_e2e.py::TestCLISubprocess::test_subprocess_json_status PASSED [ 92%]
+agent-harness/cli_anything/pm_workbench/tests/test_full_e2e.py::TestCLISubprocess::test_subprocess_json_card_list PASSED [100%]
 
-============================== 11 passed in 0.31s ==============================
+============================== 13 passed in 0.31s ==============================
+
 ```
 
