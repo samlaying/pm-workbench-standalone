@@ -46,12 +46,41 @@ async function modelReply(text, state) {
 }
 function json(res, status, body) { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(body)); }
 async function body(req) { let text = ''; for await (const chunk of req) text += chunk; return text ? JSON.parse(text) : {}; }
+function classifyFile(file) {
+  const name = String(file).toLowerCase();
+  if (/会议|meeting|日会|周会/.test(name)) return { type: 'meeting', label: '会议纪要' };
+  if (/\.xlsx?$|\.csv$/.test(name)) return { type: 'table', label: '表格' };
+  if (/\.mmd$|\.mermaid$|流程图|flow/.test(name)) return { type: 'flow', label: '流程图' };
+  if (/人物|person|客户|老板/.test(name)) return { type: 'person', label: '人物' };
+  if (/任务|todo|task/.test(name)) return { type: 'task', label: '任务' };
+  if (/图片|截图|\.png$|\.jpe?g$|\.webp$/.test(name)) return { type: 'image', label: '图片' };
+  if (/术语|上下文|工作记录|memory|记忆/.test(name)) return { type: 'memory', label: '项目记忆' };
+  return { type: 'document', label: '文档' };
+}
+function selectSkills(text) {
+  const skills = [];
+  if (/会议|纪要|录音|todo|行动项/.test(text)) skills.push('meeting-notes-organizer');
+  if (/prd|需求文档|评审前|写需求/i.test(text)) skills.push('prd-writer');
+  if (/评审|反馈|验收标准/.test(text)) skills.push('prd-review-handler');
+  if (/任务|推进|拆解|安排/.test(text)) skills.push('task-arrangement-planner');
+  if (/汇报|通知|周报|同步|风险/.test(text)) skills.push('update-writer');
+  if (/复盘|沟通表现/.test(text)) skills.push('meeting-coach');
+  if (/ai|agent|大模型/i.test(text)) skills.push('ai-pm-prd-builder');
+  return [...new Set(skills.length ? skills : ['project-context-maintainer'])];
+}
+function buildMentorReview(result, skills) {
+  const issues = [];
+  if (!result?.text || result.text.length < 80) issues.push('交付物正文过短，缺少可执行细节');
+  if (skills.includes('prd-writer') && !result?.text?.match(/目标|范围|验收|异常/)) issues.push('PRD 缺少目标、范围、验收或异常流程');
+  if (!result?.cards?.length) issues.push('没有形成可追踪的画布交付物');
+  return { status: issues.length ? 'needs_revision' : 'approved', issues, checkedSkills: skills, reviewer: 'PM Mentor' };
+}
 function scanProject(path) {
   const items = [];
   const walk = (dir, depth = 0) => { if (depth > 2) return; for (const name of readdirSync(dir, { withFileTypes: true })) { if (name.name.startsWith('.')) continue; const full = join(dir, name.name); if (name.isDirectory()) walk(full, depth + 1); else if (/\.(md|txt|xml)$/i.test(name.name)) items.push({ id: full, name: name.name, path: full, type: 'document' }); } };
   try { walk(path); } catch {}
   const fallback = [{ id: 'docs', name: '文档', type: 'group' }, { id: 'meetings', name: '会议', type: 'group' }, { id: 'notes', name: '工作记录', type: 'group' }];
-  return { id: basename(path), name: basename(path), path, items: items.length ? items : fallback };
+  return { id: basename(path), name: basename(path), path, items: items.length ? items.map(item => ({ ...item, ...classifyFile(item.path) })) : fallback };
 }
 
 const server = createServer(async (req, res) => {
@@ -79,4 +108,4 @@ const server = createServer(async (req, res) => {
   }
 });
 if (process.argv[1] === new URL(import.meta.url).pathname) server.listen(Number(process.env.PORT || 4317), '127.0.0.1', () => console.log(`PM Workbench: http://127.0.0.1:${process.env.PORT || 4317}`));
-export { parseCredentialRefs, resolveModelConfig, server, scanProject };
+export { parseCredentialRefs, resolveModelConfig, server, scanProject, classifyFile, selectSkills, buildMentorReview };
