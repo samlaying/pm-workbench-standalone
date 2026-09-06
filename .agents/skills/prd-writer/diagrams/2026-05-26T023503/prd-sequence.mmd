@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant U as 用户(客户端)
+    participant P as 产品系统
+    participant T as 第三方短信服务
+
+    rect rgb(240, 248, 255)
+    Note over U,T: 验证码发送流程
+    U->>P: 1. 点击【发送验证码】
+    P->>P: 2. 校验发送条件（规则见字段/交互说明）
+    P->>T: 3. 请求短信发送能力
+    T-->>P: 4. 返回发送结果
+    P-->>U: 5. 展示发送结果和下一步入口
+    end
+
+    rect rgb(255, 248, 240)
+    Note over U,T: 注册流程
+    U->>P: 6. 提交注册信息
+    P->>P: 7. 校验注册条件（规则见字段/交互说明）
+    P-->>U: 8. 展示注册结果或失败提示
+    end

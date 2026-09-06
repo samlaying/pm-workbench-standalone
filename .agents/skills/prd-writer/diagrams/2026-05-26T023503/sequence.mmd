@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant U as 用户
+    participant C as 客户端/产品系统
+    participant P as 第三方短信服务
+    U->>C: 输入手机号并请求验证码
+    C->>C: 校验发送条件（规则见字段/交互说明）
+    C->>P: 请求短信发送能力
+    P-->>C: 返回发送结果
+    C-->>U: 展示发送结果和下一步入口
+    U->>C: 提交注册信息
+    C->>C: 校验注册条件（规则见字段/交互说明）
+    C-->>U: 展示注册结果或跳转下一页
