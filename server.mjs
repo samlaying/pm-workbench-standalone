@@ -18,6 +18,7 @@ function broadcastState(state) {
 
 function createConversation(title = '新对话', messages = [], cards = []) { return { id: `chat-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, title, messages: [...messages], cards: [...cards], createdAt: Date.now(), updatedAt: Date.now() }; }
 function archiveConversation(state, conversation) { return { ...state, conversations: [...(state.conversations || []), { ...conversation, updatedAt: Date.now() }] }; }
+function projectCanvas(state) { return [...(state.conversations || []).flatMap(conversation => (conversation.cards || []).map(card => ({ ...card, sourceConversationId: conversation.id, sourceConversationTitle: conversation.title }))), ...(state.cards || []).map(card => ({ ...card, sourceConversationId: state.currentConversationId || 'current', sourceConversationTitle: '当前对话' }))]; }
 async function load() { try { const state = JSON.parse(await readFile(dataFile, 'utf8')); state.conversations ||= []; state.currentConversationId ||= 'main'; return state; } catch { return { ...structuredClone(initial), conversations: [], currentConversationId: 'main' }; } }
 async function save(state) {
   await mkdir(join(root, 'data'), { recursive: true });
@@ -269,6 +270,8 @@ const server = createServer(async (req, res) => {
       return json(res, 200, { workflow, cards: state.cards, text: reply.text });
     }
     if (req.method === 'POST' && url.pathname === '/api/cards') { const input = await body(req); const state = await load(); state.cards = input.cards || []; await save(state); return json(res, 200, state.cards); }
+    if (req.method === 'GET' && url.pathname === '/api/project/cards') { const state = await load(); return json(res, 200, projectCanvas(state)); }
+    if (req.method === 'POST' && url.pathname === '/api/project/cards/import') { const input = await body(req); const state = await load(); const card = projectCanvas(state).find(item => item.id === input.id); if (!card) return json(res, 404, { error: '画板不存在' }); state.cards.push({ ...card, id: `${card.id}-copy-${Date.now()}`, sourceConversationId: state.currentConversationId }); await save(state); return json(res, 200, state); }
     if (req.method === 'POST' && url.pathname === '/api/chat/open') { const input = await body(req); const state = await load(); const conversation = (state.conversations || []).find(item => item.id === input.id); if (!conversation) return json(res, 404, { error: '对话不存在' }); state.messages = conversation.messages; state.cards = conversation.cards; state.currentConversationId = conversation.id; await save(state); return json(res, 200, state); }
     if (req.method === 'POST' && url.pathname === '/api/chat/new') { const state = await load(); if (state.messages.length || state.cards.length) { const saved = createConversation(String(state.messages.find(m => m.role === 'user')?.text || '新对话').slice(0, 32), state.messages, state.cards); state.conversations = archiveConversation(state, saved).conversations; } state.messages = []; state.cards = []; state.workflow = null; state.currentConversationId = `main-${Date.now()}`; await save(state); return json(res, 200, state); }
     if (req.method === 'GET') { const file = url.pathname === '/' ? '/index.html' : url.pathname; try { const content = await readFile(join(root, 'public', file)); const type = file.endsWith('.css') ? 'text/css' : file.endsWith('.js') ? 'text/javascript' : 'text/html'; res.writeHead(200, { 'content-type': `${type}; charset=utf-8`, 'cache-control': 'no-cache' }); return res.end(content); } catch {} }
@@ -279,4 +282,4 @@ const server = createServer(async (req, res) => {
   }
 });
 if (process.argv[1] === new URL(import.meta.url).pathname) server.listen(Number(process.env.PORT || 4317), '127.0.0.1', () => console.log(`PM Workbench: http://127.0.0.1:${process.env.PORT || 4317}`));
-export { parseCredentialRefs, resolveModelConfig, server, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, analyzeProject, buildMemorySuggestions, createConversation, archiveConversation, loadProjectContext, modelReply };
+export { parseCredentialRefs, resolveModelConfig, server, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, analyzeProject, buildMemorySuggestions, createConversation, archiveConversation, projectCanvas, loadProjectContext, modelReply };

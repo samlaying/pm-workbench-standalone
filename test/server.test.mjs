@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCredentialRefs, resolveModelConfig, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, analyzeProject, buildMemorySuggestions, createConversation, archiveConversation } from '../server.mjs';
+import { parseCredentialRefs, resolveModelConfig, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, analyzeProject, buildMemorySuggestions, createConversation, archiveConversation, projectCanvas } from '../server.mjs';
 test('project binding creates a real project navigation model', () => { const p = scanProject('/tmp/pm'); assert.equal(p.name, 'pm'); assert.deepEqual(p.items.map(x => x.name), ['文档', '会议', '工作记录']); });
 
 test('model config matches the working DSH cliproxy setup', () => {
@@ -79,3 +79,7 @@ test('new conversations preserve messages and canvas as one record', () => {
   assert.equal(state.conversations[0].cards[0].title, 'PRD');
 });
 
+test('project canvas exposes cards across conversations with source metadata', () => {
+  const state = { currentConversationId: 'current', cards: [{ id: 'now' }], conversations: [{ id: 'old', title: '旧对话', cards: [{ id: 'old-card' }] }] };
+  assert.equal(projectCanvas(state).find(card => card.id === 'old-card').sourceConversationTitle, '旧对话');
+});

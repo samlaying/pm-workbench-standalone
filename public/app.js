@@ -454,6 +454,11 @@ async function persistCards() {
 }
 
 function wire() {
+  const canvasHead = document.querySelector('.canvas-head');
+  if (canvasHead && !canvasHead.querySelector('[data-cross-canvas]')) {
+    const button = document.createElement('button'); button.dataset.crossCanvas = 'true'; button.className = 'cross-canvas-button'; button.textContent = '跨对话画板'; canvasHead.append(button);
+    button.onclick = async () => { const cards = await (await request('/api/project/cards')).json(); const choices = cards.filter(card => card.sourceConversationId !== state.currentConversationId).slice(0, 12); if (!choices.length) return showError('同项目暂无其他对话画板'); const selected = prompt(`输入要加入的画板编号：\n${choices.map((card, index) => `${index + 1}. ${card.title}（${card.sourceConversationTitle}）`).join('\n')}`); const index = Number(selected) - 1; if (!choices[index]) return; state = await (await request('/api/project/cards/import', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: choices[index].id }) })).json(); render(); };
+  }
   const footer = document.querySelector('.left footer');
   if (footer) {
     footer.querySelectorAll('[data-tool]').forEach(button => {
