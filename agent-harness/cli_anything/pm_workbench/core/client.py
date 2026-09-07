@@ -71,6 +71,40 @@ def select_skills(text: str) -> list[str]:
     return list(dict.fromkeys(skills if skills else ["project-context-maintainer"]))
 
 
+def analyze_project(project: dict[str, Any] | None, request: str = "") -> dict[str, Any]:
+    items = (project or {}).get("items", [])
+    skills = select_skills(request)
+    if any(item.get("type") == "memory" or re.search(r"上下文|术语|工作记录", item.get("name", "")) for item in items):
+        skills.insert(0, "project-context-maintainer")
+    if any(item.get("type") == "meeting" for item in items):
+        skills.append("meeting-notes-organizer")
+    unique_skills = list(dict.fromkeys(skills))
+    recommendations = []
+    if any(item.get("type") == "meeting" for item in items):
+        recommendations.append("建议先整理近期会议纪要，提取决策和行动项")
+    if any(item.get("type") == "memory" for item in items):
+        recommendations.append("发现项目记忆文件，建议同步最新背景和风险")
+    if re.search(r"推进|开始|继续|需求", request):
+        recommendations.append("建议并行分析需求、任务推进和相关方沟通")
+    return {"skills": unique_skills, "recommendations": recommendations, "files": len(items)}
+
+
+def build_memory_suggestions(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    suggestions = []
+    for r in results:
+        text = r.get("text", "")
+        if re.search(r"决定|风险|偏好|承诺|行动", text):
+            target = "person" if re.search(r"人物|老板|客户", text) else "project"
+            suggestions.append({
+                "target": target,
+                "sourceSkill": r.get("skill", "agent"),
+                "content": text,
+                "requiresConfirmation": True,
+            })
+    return suggestions
+
+
+
 def scan_project(path_str: str) -> dict[str, Any]:
     target_path = Path(path_str).resolve()
     items = []
@@ -290,6 +324,7 @@ class WorkbenchClient:
                     reply_text = ""
                     cards = []
                     question = None
+                    analysis = None
                     for line in resp.iter_lines(decode_unicode=True):
                         if not line or not line.startswith("data: "):
                             continue
@@ -302,6 +337,8 @@ class WorkbenchClient:
                                 cards = parsed.get("cards", [])
                             elif parsed.get("type") == "question":
                                 question = parsed.get("question")
+                                if "analysis" in parsed:
+                                    analysis = parsed.get("analysis")
                             elif parsed.get("type") == "error":
                                 raise RuntimeError(parsed.get("message", "Unknown error"))
                         except json.JSONDecodeError:
@@ -317,22 +354,28 @@ class WorkbenchClient:
                             "text": reply_text,
                             "cards": cards,
                             "workflow": wf,
-                            "question": question
+                            "question": question,
+                            "analysis": analysis,
+                            "memorySuggestions": wf.get("memorySuggestions", [])
                         }
 
-                    return {"text": reply_text, "cards": cards}
+                    return {"text": reply_text, "cards": cards, "analysis": analysis}
             except Exception as e:
                 # If server call fails, fallback to local
                 pass
 
 
-        # Local execution
+        # Local execution fallback
         state = self.load_local_state()
         state["messages"].append({"role": "user", "text": text, "at": int(time.time() * 1000)})
+
+        project = state.get("projects", [{}])[0] if state.get("projects") else None
+        analysis = analyze_project(project, text)
 
         config = resolve_model_config()
         reply_text = ""
         new_cards = []
+        memory_suggestions = []
 
         if not config["apiKey"] or not config["baseUrl"]:
             reply_text = f"已收到：{text}\n\n（离线模式）：我会结合当前项目资料继续处理。"

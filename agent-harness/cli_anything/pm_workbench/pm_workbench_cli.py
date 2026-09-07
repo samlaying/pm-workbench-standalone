@@ -183,12 +183,39 @@ def chat_send(ctx: click.Context, text: str, answer: str):
     def show(res):
         reply = res.get("text", "")
         cards = res.get("cards", [])
-        wf = res.get("workflow")
-        if wf and "review" in wf:
-            skin.info(f"[导师审查: {wf['review'].get('status')}]")
+        wf = res.get("workflow") or {}
+        analysis = res.get("analysis") or wf.get("analysis")
+        mem_suggs = res.get("memorySuggestions") or wf.get("memorySuggestions") or []
+
+        # 1. Proactive Analysis & Recommendations
+        if analysis:
+            skills = analysis.get("skills", [])
+            recs = analysis.get("recommendations", [])
+            if skills:
+                skin.status("主动调度技能", ", ".join(skills))
+            for rec in recs:
+                skin.info(f"💡 建议: {rec}")
+
+        # 2. Mentor Review status
+        if "review" in wf:
+            rev = wf["review"]
+            skin.status("导师审核", f"{rev.get('status')} ({rev.get('reviewer')})")
+            for issue in rev.get("issues", []):
+                skin.warning(f"  - {issue}")
+
+        # 3. Response text
         skin.info(f"\n{reply}\n")
+
+        # 4. Canvas cards
         if cards:
             skin.success(f"当前画板共有 {len(cards)} 张卡片")
+
+        # 5. Memory suggestions
+        if mem_suggs:
+            skin.status("记忆建议", f"发现 {len(mem_suggs)} 条记忆更新需确认")
+            for s in mem_suggs:
+                target_label = "人物记忆" if s.get("target") == "person" else "项目记忆"
+                skin.info(f"  [{target_label}] ({s.get('sourceSkill', 'Skill')}): {s.get('content', '')[:60]}...")
 
     print_output(ctx, result, show)
 
@@ -217,6 +244,8 @@ def workflow_status(ctx: click.Context):
         skin.status("状态", w.get("status", "unknown"))
         skin.status("请求", w.get("request", ""))
         skin.status("调度技能", ", ".join(w.get("skills", [])))
+        for rec in w.get("recommendations", []):
+            skin.info(f"💡 建议: {rec}")
         if "question" in w:
             skin.info(f"\n等待确认: {w['question'].get('question')}")
         if "review" in w:
@@ -224,6 +253,12 @@ def workflow_status(ctx: click.Context):
             skin.status("导师审核", f"{rev.get('status')} ({rev.get('reviewer')})")
             for issue in rev.get("issues", []):
                 skin.warning(f"  - {issue}")
+        mem_suggs = w.get("memorySuggestions", [])
+        if mem_suggs:
+            skin.status("记忆建议", f"{len(mem_suggs)} 条待确认")
+            for s in mem_suggs:
+                target_label = "人物记忆" if s.get("target") == "person" else "项目记忆"
+                skin.info(f"  - [{target_label}] {s.get('content', '')[:60]}...")
 
     print_output(ctx, wf, show)
 
@@ -241,7 +276,16 @@ def workflow_answer(ctx: click.Context, choice: str):
         wf = r.get("workflow", {})
         skin.success(f"工作流已执行，状态: {wf.get('status')}")
         if "review" in wf:
-            skin.info(f"导师审核状态: {wf['review'].get('status')}")
+            rev = wf["review"]
+            skin.status("导师审核", f"{rev.get('status')} ({rev.get('reviewer')})")
+            for issue in rev.get("issues", []):
+                skin.warning(f"  - {issue}")
+        mem_suggs = wf.get("memorySuggestions", [])
+        if mem_suggs:
+            skin.status("记忆建议", f"发现 {len(mem_suggs)} 条待确认更新")
+            for s in mem_suggs:
+                target_label = "人物记忆" if s.get("target") == "person" else "项目记忆"
+                skin.info(f"  - [{target_label}] {s.get('content', '')[:60]}...")
 
     print_output(ctx, res, show)
 

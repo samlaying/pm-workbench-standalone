@@ -228,3 +228,38 @@ def test_new_chat_session(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     assert res["messages"] == []
     assert res["workflow"] is None
 
+
+def test_analyze_project_proactive_recommendations():
+    from cli_anything.pm_workbench.core.client import analyze_project
+
+    project = {
+        "items": [
+            {"name": "项目上下文.md", "type": "memory"},
+            {"name": "会议纪要.md", "type": "meeting"},
+            {"name": "prd.md", "type": "document"},
+        ]
+    }
+    analysis = analyze_project(project, "帮我推进这个需求")
+    assert len(analysis["recommendations"]) > 0
+    assert "project-context-maintainer" in analysis["skills"]
+    assert "meeting-notes-organizer" in analysis["skills"]
+    assert "task-arrangement-planner" in analysis["skills"]
+    assert any("会议纪要" in r for r in analysis["recommendations"])
+
+
+def test_build_memory_suggestions():
+    from cli_anything.pm_workbench.core.client import build_memory_suggestions
+
+    results = [
+        {"skill": "meeting-notes-organizer", "text": "会议决定：本周完成上线风险评估"},
+        {"skill": "prd-writer", "text": "老板偏好更轻量的前端方案"},
+        {"skill": "update-writer", "text": "常规进度同步"},
+    ]
+    suggestions = build_memory_suggestions(results)
+    assert len(suggestions) == 2
+    assert suggestions[0]["target"] == "project"
+    assert suggestions[0]["requiresConfirmation"] is True
+    assert suggestions[1]["target"] == "person"
+    assert suggestions[1]["requiresConfirmation"] is True
+
+
