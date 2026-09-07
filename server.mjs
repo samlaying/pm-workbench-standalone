@@ -6,7 +6,7 @@ import { homedir } from 'node:os';
 
 const root = new URL('.', import.meta.url).pathname;
 const dataFile = join(root, 'data', 'workspace.json');
-const initial = { projectPath: '', projects: [], messages: [], cards: [] };
+const initial = { projectPath: '', projects: [], messages: [], cards: [], canvasScene: null };
 const subscribers = new Set();
 
 function broadcastState(state) {
@@ -456,6 +456,7 @@ const server = createServer(async (req, res) => {
       return json(res, 200, { workflow, cards: state.cards, text: reply.text });
     }
     if (req.method === 'POST' && url.pathname === '/api/cards') { const input = await body(req); const state = await load(); state.cards = input.cards || []; await save(state); return json(res, 200, state.cards); }
+    if (req.method === 'POST' && url.pathname === '/api/canvas/scene') { const input = await body(req); const state = await load(); state.canvasScene = input.scene || null; await save(state); return json(res, 200, state); }
     if (req.method === 'GET' && url.pathname === '/api/project/cards') { const state = await load(); return json(res, 200, projectCanvas(state)); }
     if (req.method === 'POST' && url.pathname === '/api/project/cards/import') {
       const input = await body(req); const state = await load();

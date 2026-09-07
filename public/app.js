@@ -1,5 +1,7 @@
 const app = document.querySelector('#app');
-let state = { projects: [], messages: [], cards: [] }, scale = 1, pan = { x: 0, y: 0 }, drag = null, panning = null, sending = false;
+let state = { projects: [], messages: [], cards: [] }, scale = 1, pan = { x: 0, y: 0 }, drag = null, panning = null, sending = false, excalidrawScene = null;
+let mountExcalidraw;
+import('./excalidraw-canvas.js').then(module => { mountExcalidraw = module.mountExcalidraw; });
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const position = value => Number.isFinite(Number(value)) ? Math.max(-2000, Math.min(5000, Number(value))) : 0;
@@ -264,7 +266,9 @@ function render() {
           <span>${esc(state.projectPath || '未关联项目')}</span>
         </div>
       </div>
-      <div id="board" class="board" style="transform:translate(${pan.x}px,${pan.y}px) scale(${scale})">
+      <div id="board" class="board excalidraw-board">
+        <div id="excalidraw-root" aria-label="Excalidraw 画布"></div>
+        <div class="canvas-compat-actions"><span>卡片已转换为可编辑便签</span><button data-canvas-action="preview">预览</button><button data-canvas-action="edit">就地编辑</button><button data-canvas-action="sync">引用修改</button></div>
         ${state.cards.map(raw => {
           const c = cardData(raw);
           const badge = c.skillLabel || c.skill ? `<span class="card-agent-badge">${esc(c.skillLabel || c.skill)}</span>` : '';
@@ -456,6 +460,14 @@ async function persistCards() {
 }
 
 function wire() {
+  if (mountExcalidraw) {
+    const root = document.querySelector('#excalidraw-root');
+    if (root) mountExcalidraw(root, state.cards, state.canvasScene, scene => {
+      state.canvasScene = scene;
+      clearTimeout(window.canvasSaveTimer);
+      window.canvasSaveTimer = setTimeout(() => request('/api/canvas/scene', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ scene }) }), 700);
+    }).catch(error => { root.innerHTML = `<div class="excalidraw-fallback">Excalidraw 加载失败，仍可使用兼容卡片视图。<br>${esc(error.message)}</div>`; });
+  }
   const canvasHead = document.querySelector('.canvas-head');
   if (canvasHead && !canvasHead.querySelector('[data-cross-canvas]')) {
     const button = document.createElement('button'); button.dataset.crossCanvas = 'true'; button.className = 'cross-canvas-button'; button.textContent = '跨对话画板'; canvasHead.append(button);

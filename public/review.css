@@ -199,6 +199,13 @@ button {
 .sidebar-collapsed .chat-visibility-toggle { display: none; }
 .cross-canvas-button { margin-left: auto; padding: 6px 10px; border: 1px solid #d6deeb; border-radius: 8px; background: #fff; color: #526174; cursor: pointer; }
 .cross-canvas-button:hover { border-color: #9cb5ff; color: #4267e8; }
+.excalidraw-board { position: relative; overflow: hidden; background: #f7f8fb; }
+#excalidraw-root { position: absolute; inset: 0; z-index: 2; }
+.excalidraw-board > .card { display: none; }
+.canvas-compat-actions { position: absolute; z-index: 5; right: 18px; top: 14px; display: flex; align-items: center; gap: 6px; padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 10px; background: rgba(255,255,255,.92); box-shadow: 0 4px 14px rgba(15,23,42,.08); font-size: 11px; color: #64748b; }
+.canvas-compat-actions button { border: 0; background: transparent; color: #475569; cursor: pointer; padding: 3px 5px; border-radius: 5px; }
+.canvas-compat-actions button:hover { background: #eef2ff; color: #4f46e5; }
+.excalidraw-fallback { padding: 24px; color: #b42318; font-size: 13px; }
 .card-source-badge { display: inline-flex; align-items: center; padding: 1px 6px; border-radius: 9999px; font-size: 10px; font-weight: 500; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; margin-left: 4px; white-space: nowrap; flex-shrink: 0; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
 
 button:disabled {
