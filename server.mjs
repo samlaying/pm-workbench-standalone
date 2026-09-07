@@ -151,6 +151,21 @@ function findNextAvailablePosition(existingCards, preferredX, preferredY) {
 function mergeSkillResults(results) {
   return { text: results.map(result => `【${result.skill}】\n${result.text}`).join('\n\n'), cards: results.map((result, index) => ({ id: `skill-${index}`, icon: '▧', title: result.skill, body: result.text, x: 80 + (index % 3) * 470, y: 80 + Math.floor(index / 3) * 390 })) };
 }
+function analyzeProject(project, request = '') {
+  const items = project?.items || [];
+  const skills = selectSkills(request);
+  if (items.some(item => item.type === 'memory' || /上下文|术语|工作记录/.test(item.name))) skills.unshift('project-context-maintainer');
+  if (items.some(item => item.type === 'meeting')) skills.push('meeting-notes-organizer');
+  const uniqueSkills = [...new Set(skills)];
+  const recommendations = [];
+  if (items.some(item => item.type === 'meeting')) recommendations.push('建议先整理近期会议纪要，提取决策和行动项');
+  if (items.some(item => item.type === 'memory')) recommendations.push('发现项目记忆文件，建议同步最新背景和风险');
+  if (/推进|开始|继续|需求/.test(request)) recommendations.push('建议并行分析需求、任务推进和相关方沟通');
+  return { skills: uniqueSkills, recommendations, files: items.length };
+}
+function buildMemorySuggestions(results) {
+  return results.filter(result => /决定|风险|偏好|承诺|行动/.test(result.text || '')).map(result => ({ target: /人物|老板|客户/.test(result.text) ? 'person' : 'project', sourceSkill: result.skill, content: result.text, requiresConfirmation: true }));
+}
 function scanProject(path) {
   const items = [];
   const walk = (dir, depth = 0) => { if (depth > 2) return; for (const name of readdirSync(dir, { withFileTypes: true })) { if (name.name.startsWith('.')) continue; const full = join(dir, name.name); if (name.isDirectory()) walk(full, depth + 1); else if (/\.(md|txt|xml)$/i.test(name.name)) items.push({ id: full, name: name.name, path: full, type: 'document' }); } };
@@ -178,14 +193,15 @@ const server = createServer(async (req, res) => {
       const input = await body(req); const text = String(input.text || '').trim(); if (!text) return json(res, 400, { error: '消息不能为空' });
       const state = await load(); state.messages.push({ role: 'user', text, at: Date.now() }); await save(state);
       res.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache', connection: 'keep-alive' });
-      const question = createWorkflowQuestion(text); state.workflow = { id: question.id, status: 'awaiting_confirmation', request: text, skills: selectSkills(text), question }; await save(state); res.write(`data: ${JSON.stringify({ type: 'question', question })}\n\n`); res.write('data: {"type":"done"}\n\n'); return res.end();
+      const question = createWorkflowQuestion(text); const project = state.projects?.[0]; const analysis = analyzeProject(project, text); state.workflow = { id: question.id, status: 'awaiting_confirmation', request: text, skills: analysis.skills, recommendations: analysis.recommendations, question }; await save(state); res.write(`data: ${JSON.stringify({ type: 'question', question, analysis })}\n\n`); res.write('data: {"type":"done"}\n\n'); return res.end();
     }
     if (req.method === 'POST' && url.pathname === '/api/workflow/answer') {
       const input = await body(req); const state = await load(); const workflow = state.workflow;
       if (!workflow || workflow.status !== 'awaiting_confirmation') return json(res, 409, { error: '当前没有等待回答的工作流' });
       workflow.answer = String(input.answer || ''); workflow.status = 'running';
-      const prompt = `请调用所选技能 [${workflow.skills.join(', ')}]，严格依据当前绑定项目的真实文档资料，处理用户需求：“${workflow.request}”（用户偏好：${workflow.answer}）。请务必结合真实业务背景与术语产出详尽方案与画板卡片。`;
-      const reply = await modelReply(prompt, state);
+      const results = await Promise.all(workflow.skills.map(async skill => ({ skill, ...(await modelReply(`你是 ${skill} 专家。只处理“${workflow.request}”，用户选择“${workflow.answer}”。严格依据项目资料，主动识别建议、风险、项目记忆和人物记忆变化。`, state)) })));
+      const reply = mergeSkillResults(results);
+      const memorySuggestions = buildMemorySuggestions(results); workflow.memorySuggestions = memorySuggestions;
       workflow.document = reply.text;
       workflow.review = buildMentorReview({ text: reply.text, cards: reply.cards }, workflow.skills);
       workflow.status = workflow.review.status === 'approved' ? 'approved' : 'needs_revision';
@@ -212,5 +228,4 @@ const server = createServer(async (req, res) => {
   }
 });
 if (process.argv[1] === new URL(import.meta.url).pathname) server.listen(Number(process.env.PORT || 4317), '127.0.0.1', () => console.log(`PM Workbench: http://127.0.0.1:${process.env.PORT || 4317}`));
-export { parseCredentialRefs, resolveModelConfig, server, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, loadProjectContext, modelReply };
-
+export { parseCredentialRefs, resolveModelConfig, server, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, analyzeProject, buildMemorySuggestions, loadProjectContext, modelReply };

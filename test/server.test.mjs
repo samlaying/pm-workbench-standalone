@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCredentialRefs, resolveModelConfig, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults } from '../server.mjs';
+import { parseCredentialRefs, resolveModelConfig, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, analyzeProject, buildMemorySuggestions } from '../server.mjs';
 test('project binding creates a real project navigation model', () => { const p = scanProject('/tmp/pm'); assert.equal(p.name, 'pm'); assert.deepEqual(p.items.map(x => x.name), ['文档', '会议', '工作记录']); });
 
 test('model config matches the working DSH cliproxy setup', () => {
@@ -40,4 +40,16 @@ test('parallel skill results merge into a document and canvas cards', () => {
   const merged = mergeSkillResults([{ skill: 'prd-writer', text: '目标、范围、验收' }, { skill: 'update-writer', text: '进展与风险' }]);
   assert.match(merged.text, /prd-writer/);
   assert.equal(merged.cards.length, 2);
+});
+
+test('proactive analyzer recommends work from project files and request', () => {
+  const analysis = analyzeProject({ items: [{ name: '项目上下文.md', type: 'memory' }, { name: '会议纪要.md', type: 'meeting' }] }, '帮我推进这个需求');
+  assert.ok(analysis.recommendations.length > 0);
+  assert.ok(analysis.skills.includes('project-context-maintainer'));
+});
+
+test('memory updates are suggestions requiring confirmation', () => {
+  const suggestions = buildMemorySuggestions([{ skill: 'meeting-notes-organizer', text: '决定：本周完成上线' }]);
+  assert.equal(suggestions[0].requiresConfirmation, true);
+  assert.equal(suggestions[0].target, 'project');
 });
