@@ -37,6 +37,12 @@ from cli_anything.pm_workbench.core.session import (
     open_conversation,
     send_chat_message,
 )
+from cli_anything.pm_workbench.core.graph import (
+    get_graph_node,
+    get_project_graph,
+    list_graph_edges,
+    list_graph_nodes,
+)
 from cli_anything.pm_workbench.utils.repl_skin import ReplSkin
 
 VERSION = "0.1.0"
@@ -588,6 +594,133 @@ def card_import(ctx: click.Context, card_id: str):
         skin.status("当前卡片总数", str(len(state.get("cards", []))))
 
     print_output(ctx, res, show)
+
+
+# ── Graph / Requirement Graph commands ───────────────────────
+
+@cli.group("graph")
+def graph_group():
+    """Inspect project requirement graph and agent links."""
+    pass
+
+
+@graph_group.command("show")
+@click.pass_context
+def graph_show_cmd(ctx: click.Context):
+    """Show summary of project requirement graph."""
+    client: WorkbenchClient = ctx.obj["client"]
+    skin: ReplSkin = ctx.obj["skin"]
+    g = get_project_graph(client)
+    nodes = g.get("nodes", [])
+    edges = g.get("edges", [])
+
+    def show(data):
+        skin.section("项目需求图概览")
+        skin.status("项目 ID", str(data.get("projectId", "未关联项目")))
+        skin.status("节点总数", str(len(nodes)))
+        skin.status("Agent 连线数", str(len(edges)))
+        types = {}
+        for n in nodes:
+            t = n.get("type", "other")
+            types[t] = types.get(t, 0) + 1
+        if types:
+            skin.section("节点类型分布")
+            for t, count in types.items():
+                skin.info(f"  • {t}: {count} 个")
+        if edges:
+            skin.section("最新 Agent 自动关联")
+            for e in edges[-6:]:
+                skin.info(f"  ↳ {e.get('kind', 'link')} · {e.get('reason', '上下文关联')} ({e.get('source')} -> {e.get('target')})")
+
+    print_output(ctx, g, show)
+
+
+@graph_group.command("nodes")
+@click.option("--type", "-t", "node_type", help="Filter nodes by type (requirement, conversation, deliverable, analysis, memory).")
+@click.pass_context
+def graph_nodes_cmd(ctx: click.Context, node_type: str | None):
+    """List nodes in the project requirement graph."""
+    client: WorkbenchClient = ctx.obj["client"]
+    skin: ReplSkin = ctx.obj["skin"]
+    nodes = list_graph_nodes(client, node_type)
+
+    def show(data):
+        if not data:
+            skin.info("暂无需求图节点")
+            return
+        skin.section(f"需求图节点列表 ({len(data)} 个)")
+        headers = ["节点 ID", "类型", "标题", "状态", "关联 Skill"]
+        rows = [
+            [
+                str(n.get("id", "")),
+                str(n.get("type", "")),
+                str(n.get("title", "")),
+                str(n.get("status", "")),
+                str(n.get("skill", "") or "-"),
+            ]
+            for n in data
+        ]
+        skin.table(headers, rows)
+
+    print_output(ctx, nodes, show)
+
+
+@graph_group.command("edges")
+@click.pass_context
+def graph_edges_cmd(ctx: click.Context):
+    """List agent links / edges in the requirement graph."""
+    client: WorkbenchClient = ctx.obj["client"]
+    skin: ReplSkin = ctx.obj["skin"]
+    edges = list_graph_edges(client)
+
+    def show(data):
+        if not data:
+            skin.info("暂无连线数据")
+            return
+        skin.section(f"Agent 连线列表 ({len(data)} 条)")
+        headers = ["连线 ID", "来源", "目标", "关系类型", "关联原因"]
+        rows = [
+            [
+                str(e.get("id", "")),
+                str(e.get("source", "")),
+                str(e.get("target", "")),
+                str(e.get("kind", "")),
+                str(e.get("reason", "") or "-"),
+            ]
+            for e in data
+        ]
+        skin.table(headers, rows)
+
+    print_output(ctx, edges, show)
+
+
+@graph_group.command("node")
+@click.argument("node_id")
+@click.pass_context
+def graph_node_cmd(ctx: click.Context, node_id: str):
+    """Get details of a specific requirement graph node."""
+    client: WorkbenchClient = ctx.obj["client"]
+    skin: ReplSkin = ctx.obj["skin"]
+    node = get_graph_node(client, node_id)
+    if not node:
+        if ctx.obj.get("json", False):
+            click.echo(json.dumps({"error": f"Node {node_id} not found"}))
+        else:
+            skin.error(f"未找到节点：{node_id}")
+        ctx.exit(1)
+
+    def show(data):
+        skin.section(f"节点详情: {data.get('title', '')}")
+        skin.status("节点 ID", str(data.get("id", "")))
+        skin.status("节点类型", str(data.get("type", "")))
+        skin.status("当前状态", str(data.get("status", "")))
+        if data.get("skill"):
+            skin.status("来源 Skill", str(data.get("skill")))
+        if data.get("content"):
+            skin.section("节点内容")
+            click.echo(str(data.get("content", "")))
+
+    print_output(ctx, node, show)
 
 
 # ── Server commands ───────────────────────────────────────────

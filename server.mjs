@@ -479,6 +479,7 @@ const server = createServer(async (req, res) => {
     }
     if (req.method === 'POST' && url.pathname === '/api/cards') { const input = await body(req); const state = await load(); state.cards = input.cards || []; await save(state); return json(res, 200, state.cards); }
     if (req.method === 'GET' && url.pathname === '/api/project/cards') { const state = await load(); return json(res, 200, projectCanvas(state)); }
+    if (req.method === 'GET' && url.pathname === '/api/graph') { const state = await load(); return json(res, 200, state.graph || { nodes: [], edges: [] }); }
     if (req.method === 'POST' && url.pathname === '/api/project/cards/import') {
       const input = await body(req); const state = await load();
       const card = projectCanvas(state).find(item => item.id === input.id);

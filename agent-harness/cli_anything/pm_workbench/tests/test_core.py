@@ -383,5 +383,101 @@ def test_cross_conversation_project_cards(tmp_path: Path, monkeypatch: pytest.Mo
     assert imported["sourceConversationId"] == "conv-active"
 
 
+def test_project_requirement_graph_builder(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    from cli_anything.pm_workbench.core.client import build_project_graph
+    from cli_anything.pm_workbench.core.graph import (
+        get_project_graph,
+        list_graph_nodes,
+        list_graph_edges,
+        get_graph_node,
+    )
+
+    mock_data_file = tmp_path / "data" / "workspace.json"
+    monkeypatch.setattr("cli_anything.pm_workbench.core.client.get_data_file", lambda: mock_data_file)
+
+    graph = build_project_graph(
+        {"id": "p1", "name": "DemoProject"},
+        "写一份 PRD 需求文档",
+        "chat-100",
+        results=[
+            {"skill": "prd-writer", "text": "范围与验收"},
+            {"skill": "project-context-maintainer", "text": "决定：本周完成上线"},
+        ],
+        cards=[
+            {"id": "c1", "title": "【最终交付模版】PRD 框架", "body": "目标\n范围"},
+            {"id": "c2", "title": "任务分析", "body": "拆解"},
+        ],
+    )
+    assert graph["projectId"] == "p1"
+    assert graph["requirement"]["title"] == "写一份 PRD 需求文档"
+    assert graph["conversation"]["id"] == "chat-100"
+    assert any(n["type"] == "deliverable" and n["status"] == "skeleton" for n in graph["nodes"])
+    assert any(n["type"] == "analysis" for n in graph["nodes"])
+    assert any(n["type"] == "memory" for n in graph["nodes"])
+    assert any(e["kind"] == "agent_link" for e in graph["edges"])
+
+    client = WorkbenchClient(force_local=True)
+    state = client.load_local_state()
+    state["graph"] = graph
+    client.save_local_state(state)
+
+    # Test graph helpers
+    retrieved = get_project_graph(client)
+    assert retrieved["projectId"] == "p1"
+    assert len(retrieved["nodes"]) == len(graph["nodes"])
+
+    deliverables = list_graph_nodes(client, "deliverable")
+    assert len(deliverables) == 1
+    assert "PRD" in deliverables[0]["title"]
+
+    edges = list_graph_edges(client)
+    assert len(edges) > 0
+
+    first_node_id = graph["nodes"][0]["id"]
+    node = get_graph_node(client, first_node_id)
+    assert node is not None
+    assert node["id"] == first_node_id
+
+
+def test_graph_cli_commands(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    from click.testing import CliRunner
+    from cli_anything.pm_workbench.pm_workbench_cli import cli
+    from cli_anything.pm_workbench.core.client import build_project_graph
+
+    mock_data_file = tmp_path / "data" / "workspace.json"
+    monkeypatch.setattr("cli_anything.pm_workbench.core.client.get_data_file", lambda: mock_data_file)
+
+    graph = build_project_graph(
+        {"id": "test-p"},
+        "调研多渠道能力差异",
+        "conv-1",
+        results=[{"skill": "ai-pm-prd-builder", "text": "差异矩阵"}],
+        cards=[{"title": "【最终交付模版】渠道评估表", "body": "模版内容"}],
+    )
+    client = WorkbenchClient(force_local=True)
+    state = client.load_local_state()
+    state["graph"] = graph
+    client.save_local_state(state)
+
+    runner = CliRunner()
+    res = runner.invoke(cli, ["--json", "--offline", "graph", "show"])
+    assert res.exit_code == 0
+    data = json.loads(res.output)
+    assert data["projectId"] == "test-p"
+    assert len(data["nodes"]) >= 3
+
+    res_nodes = runner.invoke(cli, ["--json", "--offline", "graph", "nodes", "--type", "deliverable"])
+    assert res_nodes.exit_code == 0
+    nodes = json.loads(res_nodes.output)
+    assert len(nodes) == 1
+    assert "渠道评估表" in nodes[0]["title"]
+
+    res_edges = runner.invoke(cli, ["--json", "--offline", "graph", "edges"])
+    assert res_edges.exit_code == 0
+    edges = json.loads(res_edges.output)
+    assert len(edges) >= 2
+
+
+
 
 

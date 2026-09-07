@@ -338,6 +338,118 @@ def build_memory_suggestions(results: list[dict[str, Any]]) -> list[dict[str, An
     return suggestions
 
 
+def build_project_graph(
+    project: dict[str, Any] | None,
+    request: str,
+    conversation_id: str = "main",
+    results: list[dict[str, Any]] | None = None,
+    cards: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    now = int(time.time() * 1000)
+    project_id = (project or {}).get("id") or (project or {}).get("name") or "unbound-project"
+    requirement = {
+        "id": f"requirement-{now}",
+        "projectId": project_id,
+        "type": "requirement",
+        "title": str(request or "未命名需求")[:80],
+        "status": "active",
+        "createdAt": now,
+    }
+    conversation = {
+        "id": conversation_id or f"conversation-{now}",
+        "projectId": project_id,
+        "type": "conversation",
+        "title": str(request or "新对话")[:32],
+        "createdAt": now,
+    }
+    nodes = [requirement, conversation]
+    edges = [
+        {
+            "id": f"edge-{now}-requirement",
+            "source": requirement["id"],
+            "target": conversation["id"],
+            "kind": "contains",
+            "createdBy": "agent",
+        }
+    ]
+
+    def add_node(node: dict[str, Any], parent: dict[str, Any] = conversation):
+        nodes.append(node)
+        edges.append({
+            "id": f"edge-{now}-{len(edges)}",
+            "source": parent["id"],
+            "target": node["id"],
+            "kind": "agent_link",
+            "createdBy": "agent",
+            "reason": f"由 {node.get('skill') or node.get('type')} 产生",
+        })
+
+    for index, card in enumerate(cards or []):
+        title = card.get("title", "")
+        is_deliv = bool(re.search(r"模版|模板|PRD|汇报|纪要", title))
+        is_skel = bool(re.search(r"模版|模板", title))
+        add_node({
+            "id": f"deliverable-{now}-{index}",
+            "projectId": project_id,
+            "conversationId": conversation["id"],
+            "type": "deliverable" if is_deliv else "analysis",
+            "title": title,
+            "content": card.get("body", ""),
+            "skill": card.get("skill"),
+            "status": "skeleton" if is_skel else "draft",
+            "position": {
+                "x": 520 + (index % 3) * 360,
+                "y": 140 + (index // 3) * 280,
+            },
+            "createdAt": now,
+        })
+
+    for index, result in enumerate(results or []):
+        add_node({
+            "id": f"skill-{now}-{index}",
+            "projectId": project_id,
+            "conversationId": conversation["id"],
+            "type": "analysis",
+            "title": result.get("skill", "skill"),
+            "content": result.get("text", ""),
+            "skill": result.get("skill"),
+            "status": "complete",
+            "position": {
+                "x": 100 + (index % 3) * 360,
+                "y": 480 + (index // 3) * 280,
+            },
+            "createdAt": now,
+        })
+
+    memory_results = build_memory_suggestions(results or [])
+    for index, memory in enumerate(memory_results):
+        target_name = "人物" if memory.get("target") == "person" else "项目"
+        add_node({
+            "id": f"memory-{now}-{index}",
+            "projectId": project_id,
+            "conversationId": conversation["id"],
+            "type": "memory",
+            "title": f"{target_name}记忆候选",
+            "content": memory.get("content", ""),
+            "skill": memory.get("sourceSkill"),
+            "status": "needs_confirmation",
+            "requiresConfirmation": True,
+            "position": {
+                "x": 100 + index * 360,
+                "y": 900,
+            },
+            "createdAt": now,
+        })
+
+    return {
+        "projectId": project_id,
+        "requirement": requirement,
+        "conversation": conversation,
+        "nodes": nodes,
+        "edges": edges,
+        "updatedAt": now,
+    }
+
 
 def scan_project(path_str: str) -> dict[str, Any]:
     target_path = Path(path_str).resolve()
@@ -637,6 +749,18 @@ class WorkbenchClient:
         state.setdefault("cards", []).append(imported)
         self.save_local_state(state)
         return state
+
+    def get_graph(self) -> dict[str, Any]:
+        """Get the project requirement graph (nodes and edges)."""
+        if self.is_server_available() and not self.dry_run:
+            try:
+                resp = requests.get(f"{self.base_url}/api/graph", timeout=5.0)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception:
+                pass
+        state = self.load_local_state()
+        return state.get("graph") or {"nodes": [], "edges": []}
 
     def send_message(self, text: str, auto_answer: str = "draft") -> dict[str, Any]:
         """Send message and receive response and generated cards."""
