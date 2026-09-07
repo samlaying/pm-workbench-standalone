@@ -325,4 +325,38 @@ def test_multi_agent_merge_skill_results():
     assert merged["cards"][2]["icon"] == "🤖"
 
 
+def test_cross_conversation_project_cards(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    from cli_anything.pm_workbench.core.canvas import list_project_cards, import_card
+
+    mock_data_file = tmp_path / "data" / "workspace.json"
+    monkeypatch.setattr("cli_anything.pm_workbench.core.client.get_data_file", lambda: mock_data_file)
+
+    client = WorkbenchClient(force_local=True)
+    state = client.load_local_state()
+    state["currentConversationId"] = "conv-active"
+    state["cards"] = [{"id": "card-now", "title": "当前卡片"}]
+    state["conversations"] = [
+        {
+            "id": "conv-history-1",
+            "title": "渠道调研会话",
+            "cards": [{"id": "card-hist-1", "title": "飞书接入流程"}],
+        }
+    ]
+    client.save_local_state(state)
+
+    # 1. Test listing all cards across conversations
+    all_cards = list_project_cards(client)
+    assert len(all_cards) == 2
+    hist_card = next(c for c in all_cards if c["id"] == "card-hist-1")
+    assert hist_card["sourceConversationTitle"] == "渠道调研会话"
+
+    # 2. Test importing a card from history into active canvas
+    res = import_card(client, "card-hist-1")
+    assert len(res["cards"]) == 2
+    imported = next(c for c in res["cards"] if "card-hist-1" in c["id"])
+    assert imported["title"] == "飞书接入流程"
+    assert imported["sourceConversationId"] == "conv-active"
+
+
+
 

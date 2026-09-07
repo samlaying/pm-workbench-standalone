@@ -19,7 +19,9 @@ from cli_anything.pm_workbench.core.canvas import (
     delete_card,
     export_cards,
     get_card,
+    import_card,
     list_cards,
+    list_project_cards,
     update_card,
 )
 from cli_anything.pm_workbench.core.project import (
@@ -535,6 +537,55 @@ def card_export(ctx: click.Context, output: str | None):
             skin.success(f"成功导出 {r.get('total')} 张卡片到: {r.get('outputPath')}")
         else:
             skin.info(f"画板共有 {r.get('total')} 张卡片")
+
+    print_output(ctx, res, show)
+
+
+@card.command("project-cards")
+@click.pass_context
+def card_project_cards(ctx: click.Context):
+    """List all cards across all conversations in the project."""
+    client: WorkbenchClient = ctx.obj["client"]
+    skin: ReplSkin = ctx.obj["skin"]
+    cards = list_project_cards(client)
+
+    def show(items):
+        if not items:
+            skin.info("项目中暂无任何跨对话卡片")
+            return
+        rows = [
+            [
+                str(c.get("id")),
+                str(c.get("title", "")),
+                str(c.get("sourceConversationTitle", "当前对话")),
+                str(c.get("icon", "📄")),
+            ]
+            for c in items
+        ]
+        skin.table(["卡片 ID", "标题", "所属会话", "图标"], rows)
+
+    print_output(ctx, cards, show)
+
+
+@card.command("import")
+@click.argument("card_id")
+@click.pass_context
+def card_import(ctx: click.Context, card_id: str):
+    """Import a card from another conversation into current conversation canvas."""
+    client: WorkbenchClient = ctx.obj["client"]
+    skin: ReplSkin = ctx.obj["skin"]
+    try:
+        res = import_card(client, card_id)
+    except KeyError:
+        if ctx.obj.get("json"):
+            click.echo(json.dumps({"error": f"Card {card_id} not found in project"}))
+            ctx.exit(1)
+        skin.error(f"未在项目中找到卡片: {card_id}")
+        ctx.exit(1)
+
+    def show(state):
+        skin.success(f"已成功导入卡片 [{card_id}] 到当前对话画板")
+        skin.status("当前卡片总数", str(len(state.get("cards", []))))
 
     print_output(ctx, res, show)
 

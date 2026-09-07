@@ -268,6 +268,7 @@ function render() {
         ${state.cards.map(raw => {
           const c = cardData(raw);
           const badge = c.skillLabel || c.skill ? `<span class="card-agent-badge">${esc(c.skillLabel || c.skill)}</span>` : '';
+          const sourceBadge = c.sourceConversationTitle && c.sourceConversationTitle !== '当前对话' ? `<span class="card-source-badge" title="来自历史会话: ${esc(c.sourceConversationTitle)}">${esc(c.sourceConversationTitle)}</span>` : '';
           return `
             <article class="card" data-id="${esc(c.id)}" style="left:${c.x}px;top:${c.y}px">
               <header>
@@ -275,6 +276,7 @@ function render() {
                   <span class="card-icon">${c.icon ? esc(c.icon) : icon('file-text', 14)}</span>
                   <b>${esc(c.title)}</b>
                   ${badge}
+                  ${sourceBadge}
                 </div>
                 <button class="card-close-btn" data-close="${esc(c.id)}" aria-label="关闭卡片">${icon('x', 14)}</button>
               </header>

@@ -405,6 +405,61 @@ class WorkbenchClient:
         self.save_local_state(state)
         return state
 
+    def get_project_cards(self) -> list[dict[str, Any]]:
+        """Get all cards across all conversations in the project."""
+        if self.is_server_available() and not self.dry_run:
+            try:
+                resp = requests.get(f"{self.base_url}/api/project/cards", timeout=5.0)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception:
+                pass
+        state = self.load_local_state()
+        curr_id = state.get("currentConversationId", "current")
+        cards = []
+        for conv in state.get("conversations", []):
+            for c in conv.get("cards", []):
+                cards.append({
+                    **c,
+                    "sourceConversationId": conv.get("id"),
+                    "sourceConversationTitle": conv.get("title", "历史对话"),
+                })
+        for c in state.get("cards", []):
+            cards.append({
+                **c,
+                "sourceConversationId": curr_id,
+                "sourceConversationTitle": "当前对话",
+            })
+        return cards
+
+    def import_project_card(self, card_id: str) -> dict[str, Any]:
+        """Import a card from another conversation into current conversation canvas."""
+        if self.is_server_available() and not self.dry_run:
+            try:
+                resp = requests.post(
+                    f"{self.base_url}/api/project/cards/import",
+                    json={"id": card_id},
+                    timeout=5.0,
+                )
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception:
+                pass
+        state = self.load_local_state()
+        all_cards = self.get_project_cards()
+        target = next((c for c in all_cards if c.get("id") == card_id), None)
+        if not target:
+            raise KeyError(f"Card with id '{card_id}' not found in project")
+        new_id = f"{target['id']}-copy-{int(time.time() * 1000)}"
+        imported = {
+            **target,
+            "id": new_id,
+            "sourceConversationId": state.get("currentConversationId", "current"),
+        }
+        state.setdefault("cards", []).append(imported)
+        self.save_local_state(state)
+        return state
+
     def send_message(self, text: str, auto_answer: str = "draft") -> dict[str, Any]:
         """Send message and receive response and generated cards."""
         text = text.strip()

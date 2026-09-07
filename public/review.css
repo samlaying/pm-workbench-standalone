@@ -199,6 +199,7 @@ button {
 .sidebar-collapsed .chat-visibility-toggle { display: none; }
 .cross-canvas-button { margin-left: auto; padding: 6px 10px; border: 1px solid #d6deeb; border-radius: 8px; background: #fff; color: #526174; cursor: pointer; }
 .cross-canvas-button:hover { border-color: #9cb5ff; color: #4267e8; }
+.card-source-badge { display: inline-flex; align-items: center; padding: 1px 6px; border-radius: 9999px; font-size: 10px; font-weight: 500; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; margin-left: 4px; white-space: nowrap; flex-shrink: 0; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
 
 button:disabled {
   cursor: wait;

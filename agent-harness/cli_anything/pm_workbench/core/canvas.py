@@ -129,3 +129,14 @@ def export_cards(client: WorkbenchClient, output_file: str | None = None) -> dic
         out_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         payload["outputPath"] = str(out_path)
     return payload
+
+
+def list_project_cards(client: WorkbenchClient) -> list[dict[str, Any]]:
+    """List all cards from all conversations in the project."""
+    return client.get_project_cards()
+
+
+def import_card(client: WorkbenchClient, card_id: str) -> dict[str, Any]:
+    """Import a card from another conversation into current conversation canvas."""
+    return client.import_project_card(card_id)
+

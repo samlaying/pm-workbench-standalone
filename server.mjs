@@ -271,7 +271,15 @@ const server = createServer(async (req, res) => {
     }
     if (req.method === 'POST' && url.pathname === '/api/cards') { const input = await body(req); const state = await load(); state.cards = input.cards || []; await save(state); return json(res, 200, state.cards); }
     if (req.method === 'GET' && url.pathname === '/api/project/cards') { const state = await load(); return json(res, 200, projectCanvas(state)); }
-    if (req.method === 'POST' && url.pathname === '/api/project/cards/import') { const input = await body(req); const state = await load(); const card = projectCanvas(state).find(item => item.id === input.id); if (!card) return json(res, 404, { error: '画板不存在' }); state.cards.push({ ...card, id: `${card.id}-copy-${Date.now()}`, sourceConversationId: state.currentConversationId }); await save(state); return json(res, 200, state); }
+    if (req.method === 'POST' && url.pathname === '/api/project/cards/import') {
+      const input = await body(req); const state = await load();
+      const card = projectCanvas(state).find(item => item.id === input.id);
+      if (!card) return json(res, 404, { error: '画板不存在' });
+      const pos = findNextAvailablePosition(state.cards, card.x, card.y);
+      state.cards.push({ ...card, id: `${card.id}-copy-${Date.now()}`, sourceConversationId: state.currentConversationId, x: pos.x, y: pos.y });
+      await save(state);
+      return json(res, 200, state);
+    }
     if (req.method === 'POST' && url.pathname === '/api/chat/open') { const input = await body(req); const state = await load(); const conversation = (state.conversations || []).find(item => item.id === input.id); if (!conversation) return json(res, 404, { error: '对话不存在' }); state.messages = conversation.messages; state.cards = conversation.cards; state.currentConversationId = conversation.id; await save(state); return json(res, 200, state); }
     if (req.method === 'POST' && url.pathname === '/api/chat/new') { const state = await load(); if (state.messages.length || state.cards.length) { const saved = createConversation(String(state.messages.find(m => m.role === 'user')?.text || '新对话').slice(0, 32), state.messages, state.cards); state.conversations = archiveConversation(state, saved).conversations; } state.messages = []; state.cards = []; state.workflow = null; state.currentConversationId = `main-${Date.now()}`; await save(state); return json(res, 200, state); }
     if (req.method === 'GET') { const file = url.pathname === '/' ? '/index.html' : url.pathname; try { const content = await readFile(join(root, 'public', file)); const type = file.endsWith('.css') ? 'text/css' : file.endsWith('.js') ? 'text/javascript' : 'text/html'; res.writeHead(200, { 'content-type': `${type}; charset=utf-8`, 'cache-control': 'no-cache' }); return res.end(content); } catch {} }
