@@ -21,8 +21,23 @@ function render() {
   app.append(picker);
   wire();
   enableCanvasEditing();
+  setupLayoutControls();
   if (state.pendingQuestion) { const question = state.pendingQuestion; state.pendingQuestion = null; showQuestion(question); }
   if (draft) { const textarea = document.querySelector('#text'); textarea.focus(); textarea.setSelectionRange(draft.length, draft.length); }
+}
+function setupLayoutControls() {
+  const root = document.querySelector('#app');
+  if (!root || root.querySelector('.layout-splitter')) return;
+  const saved = JSON.parse(localStorage.getItem('pm-layout') || '{}');
+  if (saved.columns) root.style.gridTemplateColumns = saved.columns;
+  const left = document.querySelector('.left');
+  const toggle = document.createElement('button'); toggle.className = 'collapse-sidebar'; toggle.textContent = '‹'; toggle.title = '收起侧边栏';
+  left?.prepend(toggle);
+  if (saved.collapsed) { root.classList.add('sidebar-collapsed'); toggle.textContent = '›'; }
+  toggle.onclick = () => { root.classList.toggle('sidebar-collapsed'); const collapsed = root.classList.contains('sidebar-collapsed'); toggle.textContent = collapsed ? '›' : '‹'; toggle.title = collapsed ? '展开侧边栏' : '收起侧边栏'; localStorage.setItem('pm-layout', JSON.stringify({ ...saved, collapsed })); };
+  const makeSplitter = (index) => { const splitter = document.createElement('div'); splitter.className = 'layout-splitter'; splitter.dataset.index = index; root.insertBefore(splitter, root.children[index + 1]); let startX = 0, startColumns = ''; splitter.onpointerdown = event => { startX = event.clientX; startColumns = getComputedStyle(root).gridTemplateColumns; splitter.setPointerCapture(event.pointerId); splitter.onpointermove = move => { const columns = startColumns.split(' '); const delta = move.clientX - startX; const first = Math.max(index === 0 ? 180 : 300, parseFloat(columns[index]) + delta); const second = Math.max(index === 0 ? 300 : 260, parseFloat(columns[index + 1]) - delta); columns[index] = `${first}px`; columns[index + 1] = `${second}px`; root.style.gridTemplateColumns = columns.join(' '); }; splitter.onpointerup = () => { splitter.onpointermove = null; localStorage.setItem('pm-layout', JSON.stringify({ columns: root.style.gridTemplateColumns, collapsed: root.classList.contains('sidebar-collapsed') })); }; }; };
+  makeSplitter(0); makeSplitter(2);
+  document.querySelectorAll('.layout-splitter').forEach((splitter, i) => { const anchor = i === 0 ? root.children[0] : root.children[2]; splitter.style.left = `${anchor.offsetLeft + anchor.offsetWidth}px`; });
 }
 function enableCanvasEditing() {
   document.querySelectorAll('.card').forEach(card => {

@@ -9,6 +9,13 @@ button { cursor: pointer; }
 .question-card button:hover { border-color: #6184ff; background: #eef2ff; }
 .question-card > div { display: flex; gap: 8px; }
 .question-card small { color: #697894; }
+.layout-splitter { position: absolute; top: 0; bottom: 0; width: 6px; margin-left: -3px; z-index: 8; cursor: col-resize; background: transparent; }
+.layout-splitter:hover, .layout-splitter:active { background: #9cb5ff88; }
+.collapse-sidebar { position: absolute; right: 8px; top: 10px; z-index: 3; width: 26px; height: 26px; border: 1px solid #cbd7eb; border-radius: 7px; background: #fff; color: #50658d; cursor: pointer; }
+.sidebar-collapsed { grid-template-columns: 48px 430px 1fr !important; }
+.sidebar-collapsed .left { padding: 48px 8px 12px; overflow: hidden; }
+.sidebar-collapsed .left > *:not(.collapse-sidebar) { display: none; }
+.sidebar-collapsed .collapse-sidebar { right: 11px; }
 .card > p[contenteditable="true"] { cursor: text; outline: 1px dashed transparent; }
 .card > p[contenteditable="true"]:focus { outline-color: #8ca8ff; background: #fbfcff; }
 button:disabled { cursor: wait; opacity: .55; }
