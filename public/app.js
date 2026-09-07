@@ -196,9 +196,8 @@ function render() {
                 <span style="display:flex;align-items:center;gap:4px;">${icon('chevronDown', 12)} 会话</span>
                 <button class="btn-item-action" data-new-chat="${esc(p.path)}" title="新增对话">${icon('plus', 11)} 新对话</button>
               </div>
-              <div class="project-chat-item active" data-new-chat="${esc(p.path)}" title="点击切换或新建对话">
-                <span>· 主会话 ${state.messages.length ? `(${state.messages.length}条)` : '（新）'}</span>
-              </div>
+              <div class="project-chat-item active" data-new-chat="${esc(p.path)}" title="当前对话"><span>· 当前对话 ${state.messages.length ? `(${state.messages.length}条)` : '（新）'}</span></div>
+              ${(state.conversations || []).map(c => `<div class="project-chat-item" data-conversation="${esc(c.id)}" title="切换历史对话"><span>· ${esc(c.title)} (${c.messages.length}条)</span></div>`).join('')}
             </div>
             <div class="project-item-group">
               <div class="project-item-header">${icon('chevronDown', 12)} 需求点</div>
@@ -340,6 +339,13 @@ function setupLayoutControls() {
   if (saved.collapsed) {
     root.classList.add('sidebar-collapsed');
   }
+  const chatToggle = document.createElement('button');
+  chatToggle.className = 'chat-visibility-toggle';
+  chatToggle.textContent = saved.chatHidden ? '显示对话' : '隐藏对话';
+  chatToggle.title = '切换中间对话栏';
+  left?.append(chatToggle);
+  if (saved.chatHidden) root.classList.add('chat-hidden');
+  chatToggle.onclick = () => { const hidden = root.classList.toggle('chat-hidden'); chatToggle.textContent = hidden ? '显示对话' : '隐藏对话'; localStorage.setItem('pm-layout', JSON.stringify({ ...saved, chatHidden: hidden })); };
 
   toggle.onclick = () => {
     root.classList.toggle('sidebar-collapsed');
@@ -537,6 +543,7 @@ function wire() {
       handleNewChat(button.dataset.newChat);
     };
   });
+  document.querySelectorAll('[data-conversation]').forEach(button => { button.onclick = async () => { state = await (await request('/api/chat/open', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: button.dataset.conversation }) })).json(); render(); }; });
 
   const headerNewChat = document.querySelector('#btn-header-new-chat');
   if (headerNewChat) {

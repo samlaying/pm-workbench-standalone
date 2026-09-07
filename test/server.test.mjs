@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCredentialRefs, resolveModelConfig, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, analyzeProject, buildMemorySuggestions } from '../server.mjs';
+import { parseCredentialRefs, resolveModelConfig, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, analyzeProject, buildMemorySuggestions, createConversation, archiveConversation } from '../server.mjs';
 test('project binding creates a real project navigation model', () => { const p = scanProject('/tmp/pm'); assert.equal(p.name, 'pm'); assert.deepEqual(p.items.map(x => x.name), ['文档', '会议', '工作记录']); });
 
 test('model config matches the working DSH cliproxy setup', () => {
@@ -52,4 +52,11 @@ test('memory updates are suggestions requiring confirmation', () => {
   const suggestions = buildMemorySuggestions([{ skill: 'meeting-notes-organizer', text: '决定：本周完成上线' }]);
   assert.equal(suggestions[0].requiresConfirmation, true);
   assert.equal(suggestions[0].target, 'project');
+});
+
+test('new conversations preserve messages and canvas as one record', () => {
+  const conversation = createConversation('需求讨论', [{ role: 'user', text: '写 PRD' }], [{ id: 'c1', title: 'PRD' }]);
+  const state = archiveConversation({ conversations: [], messages: conversation.messages, cards: conversation.cards }, conversation);
+  assert.equal(state.conversations.length, 1);
+  assert.equal(state.conversations[0].cards[0].title, 'PRD');
 });
