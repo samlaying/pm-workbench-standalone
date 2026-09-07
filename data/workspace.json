@@ -10,456 +10,547 @@
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/20260616 用户通知-Lily 3期内测招募.md",
           "name": "20260616 用户通知-Lily 3期内测招募.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/20260616 用户通知-Lily 3期内测招募.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/prd.md",
           "name": "prd.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/prd.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/上线排查汇报/01-上下文.md",
           "name": "01-上下文.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/上线排查汇报/01-上下文.md",
-          "type": "document"
+          "type": "memory",
+          "label": "项目记忆"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/任务.md",
           "name": "任务.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/任务.md",
-          "type": "document"
+          "type": "task",
+          "label": "任务"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/1-test.md",
           "name": "1-test.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/1-test.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/1.md",
           "name": "1.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/1.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260527 Skill流程梳理与功能对齐.md",
           "name": "20260527 Skill流程梳理与功能对齐.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260527 Skill流程梳理与功能对齐.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260527 日会.md",
           "name": "20260527 日会.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260527 日会.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260528 简历姓名显示逻辑优化.md",
           "name": "20260528 简历姓名显示逻辑优化.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260528 简历姓名显示逻辑优化.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260528 跨部门-mkt-产品发布情况介绍.md",
           "name": "20260528 跨部门-mkt-产品发布情况介绍.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260528 跨部门-mkt-产品发布情况介绍.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260528 跨部门-埋点沟通.md",
           "name": "20260528 跨部门-埋点沟通.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260528 跨部门-埋点沟通.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260528 跨部门-对接mkt介绍情况.md",
           "name": "20260528 跨部门-对接mkt介绍情况.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260528 跨部门-对接mkt介绍情况.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260601 MT沟通-Skill流程技术方案对齐-原始稿.md",
           "name": "20260601 MT沟通-Skill流程技术方案对齐-原始稿.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260601 MT沟通-Skill流程技术方案对齐-原始稿.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260601 MT沟通-Skill流程技术方案对齐.md",
           "name": "20260601 MT沟通-Skill流程技术方案对齐.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260601 MT沟通-Skill流程技术方案对齐.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260601 需求评审-Lily产品功能对齐.md",
           "name": "20260601 需求评审-Lily产品功能对齐.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260601 需求评审-Lily产品功能对齐.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260601.md",
           "name": "20260601.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260601.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260604 MT沟通-skill架构目录重构与替换-原始稿.md",
           "name": "20260604 MT沟通-skill架构目录重构与替换-原始稿.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260604 MT沟通-skill架构目录重构与替换-原始稿.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260604 MT沟通-skill架构目录重构与替换.md",
           "name": "20260604 MT沟通-skill架构目录重构与替换.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260604 MT沟通-skill架构目录重构与替换.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260605 日会-项目联调与加班安排.md",
           "name": "20260605 日会-项目联调与加班安排.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260605 日会-项目联调与加班安排.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260609 日会-系统联调与上线风险汇总.md",
           "name": "20260609 日会-系统联调与上线风险汇总.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260609 日会-系统联调与上线风险汇总.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260615 跨部门-上线前关键事项确认-原始稿.md",
           "name": "20260615 跨部门-上线前关键事项确认-原始稿.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260615 跨部门-上线前关键事项确认-原始稿.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260615 跨部门-上线前关键事项确认.md",
           "name": "20260615 跨部门-上线前关键事项确认.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260615 跨部门-上线前关键事项确认.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260624.二期同步会议.md",
           "name": "20260624.二期同步会议.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260624.二期同步会议.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260708 业务术语调研-猎聘招聘业务-原始稿.md",
           "name": "20260708 业务术语调研-猎聘招聘业务-原始稿.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260708 业务术语调研-猎聘招聘业务-原始稿.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260708 业务术语调研-猎聘招聘业务.md",
           "name": "20260708 业务术语调研-猎聘招聘业务.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260708 业务术语调研-猎聘招聘业务.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260713 用户访谈-米果电子黄老师线上访谈.md",
           "name": "20260713 用户访谈-米果电子黄老师线上访谈.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/20260713 用户访谈-米果电子黄老师线上访谈.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/3-能力梳理.md",
           "name": "3-能力梳理.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/3-能力梳理.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/3.md",
           "name": "3.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/3.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/818-/启动.md",
           "name": "启动.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/818-/启动.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/checklis.md",
           "name": "checklis.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/checklis.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/上线前对齐.md",
           "name": "上线前对齐.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/上线前对齐.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/今天.md",
           "name": "今天.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/今天.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/加班.md",
           "name": "加班.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/加班.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/搜素skill.md",
           "name": "搜素skill.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/搜素skill.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/猎头沟通记录.md",
           "name": "猎头沟通记录.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/猎头沟通记录.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/用例例评.md",
           "name": "用例例评.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/用例例评.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/邀请码.md",
           "name": "邀请码.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/会议纪要/邀请码.md",
-          "type": "document"
+          "type": "meeting",
+          "label": "会议纪要"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/内部术语表.md",
           "name": "内部术语表.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/内部术语表.md",
-          "type": "document"
+          "type": "memory",
+          "label": "项目记忆"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/商业化产品发起/顺序.md",
           "name": "顺序.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/商业化产品发起/顺序.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/技术细节.md",
           "name": "技术细节.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/技术细节.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/猎聘agent-prd.md",
           "name": "猎聘agent-prd.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/猎聘agent-prd.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/用户访谈/20260713-线上-黄-跨境电商.md",
           "name": "20260713-线上-黄-跨境电商.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/用户访谈/20260713-线上-黄-跨境电商.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/用户调研/1.md",
           "name": "1.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/用户调研/1.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/analysis-brief.md",
           "name": "analysis-brief.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/analysis-brief.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/competitor-candidates.md",
           "name": "competitor-candidates.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/competitor-candidates.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/competitor-scope.md",
           "name": "competitor-scope.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/competitor-scope.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/ecosystem-analysis.md",
           "name": "ecosystem-analysis.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/ecosystem-analysis.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/evidence-matrix.md",
           "name": "evidence-matrix.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/evidence-matrix.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/evidence-raw.md",
           "name": "evidence-raw.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/evidence-raw.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/journey-ux-benchmark.md",
           "name": "journey-ux-benchmark.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/journey-ux-benchmark.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/product-benchmark.md",
           "name": "product-benchmark.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/竞品分析/product-benchmark.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点01-Skill流程梳理与功能对齐/00-对齐记录.md",
           "name": "00-对齐记录.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点01-Skill流程梳理与功能对齐/00-对齐记录.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点01-Skill流程梳理与功能对齐/01-理解.md",
           "name": "01-理解.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点01-Skill流程梳理与功能对齐/01-理解.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点01-Skill流程梳理与功能对齐/10-过程记录.md",
           "name": "10-过程记录.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点01-Skill流程梳理与功能对齐/10-过程记录.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点01-Skill流程梳理与功能对齐/100-成品.md",
           "name": "100-成品.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点01-Skill流程梳理与功能对齐/100-成品.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点02-导流埋点/01-理解.md",
           "name": "01-理解.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点02-导流埋点/01-理解.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点02-导流埋点/10-过程记录.md",
           "name": "10-过程记录.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点02-导流埋点/10-过程记录.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点02-导流埋点/100-成品.md",
           "name": "100-成品.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点02-导流埋点/100-成品.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点02-导流埋点/500-复盘.md",
           "name": "500-复盘.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点02-导流埋点/500-复盘.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点03-lily帮助文档/Lily 使用帮助中心-普通Markdown版.md",
           "name": "Lily 使用帮助中心-普通Markdown版.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点03-lily帮助文档/Lily 使用帮助中心-普通Markdown版.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点03-lily帮助文档/Lily 使用帮助中心-飞书排版版.xml",
           "name": "Lily 使用帮助中心-飞书排版版.xml",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点03-lily帮助文档/Lily 使用帮助中心-飞书排版版.xml",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点03-lily帮助文档/面宝使用指南-4个必看教程视频-纯Markdown.md",
           "name": "面宝使用指南-4个必看教程视频-纯Markdown.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点03-lily帮助文档/面宝使用指南-4个必看教程视频-纯Markdown.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点03-lily帮助文档/面宝使用指南-4个必看教程视频.md",
           "name": "面宝使用指南-4个必看教程视频.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点03-lily帮助文档/面宝使用指南-4个必看教程视频.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点04-意向沟通兼容提示词优化/提示词.md",
           "name": "提示词.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点04-意向沟通兼容提示词优化/提示词.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点05-新手引导/01-理解.md",
           "name": "01-理解.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点05-新手引导/01-理解.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点05-新手引导/10-过程记录.md",
           "name": "10-过程记录.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点05-新手引导/10-过程记录.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点05-新手引导/100-成品.md",
           "name": "100-成品.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点05-新手引导/100-成品.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点06-上线对齐/01-理解.md",
           "name": "01-理解.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点06-上线对齐/01-理解.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点06-上线对齐/01b-上线对齐.md",
           "name": "01b-上线对齐.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点06-上线对齐/01b-上线对齐.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点06-上线对齐/10-过程记录.md",
           "name": "10-过程记录.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点06-上线对齐/10-过程记录.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点06-上线对齐/100-成品.md",
           "name": "100-成品.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点06-上线对齐/100-成品.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点06-上线对齐/500-复盘.md",
           "name": "500-复盘.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/需求点06-上线对齐/500-复盘.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/项目上下文.md",
           "name": "项目上下文.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/项目上下文.md",
-          "type": "document"
+          "type": "memory",
+          "label": "项目记忆"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/项目介绍稿.md",
           "name": "项目介绍稿.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/项目介绍稿.md",
-          "type": "document"
+          "type": "document",
+          "label": "文档"
         },
         {
           "id": "/Users/sam/02-Obsidian/liepin/100-bagent/项目工作记录.md",
           "name": "项目工作记录.md",
           "path": "/Users/sam/02-Obsidian/liepin/100-bagent/项目工作记录.md",
-          "type": "document"
+          "type": "memory",
+          "label": "项目记忆"
         }
       ]
     }
   ],
-  "messages": [],
+  "messages": [
+    {
+      "role": "user",
+      "text": "领导说：'你俩分一下，调研一下不同产品，接入 飞书/企业微信/微信/钉钉 这些渠道的流程和能力差异'。能力差异比如：Hermes 接入渠道后主要就是消息收发，不能看飞书文档；而 Workbuddy 接入后只是 CLI，不能通过飞书操作 Workbuddy。请帮我们拆解分工、制定调研维度与推进计划。",
+      "at": 1788748815839
+    },
+    {
+      "role": "user",
+      "text": "测试工作流",
+      "at": 1788749052879
+    },
+    {
+      "role": "assistant",
+      "text": "已按 draft 生成一张调研推进卡片，围绕 Lily/bagent 当前从 Agent 闭环转为导流工具的真实背景，拆解了飞书/企微/微信/钉钉等渠道接入的流程、能力差异、分工与推进计划。",
+      "at": 1788749159030
+    }
+  ],
   "cards": [
     {
       "id": "1788716010258-0",
@@ -484,7 +575,54 @@
       "icon": "📄",
       "x": 640,
       "y": 80
+    },
+    {
+      "id": "1788749159030-0",
+      "title": "渠道接入调研分工与推进计划（Draft）",
+      "body": "# 渠道接入调研分工与推进计划（Draft）\n\n> 需求来源：领导要求“你俩分一下，调研一下不同产品，接入飞书 / 企业微信 / 微信 / 钉钉这些渠道的流程和能力差异”。  \n> 当前项目背景：Lily / bagent 已在 2026-05-26 从“独立 Agent 产品 / AI 招聘搭档”调整为“引流工具”，核心目标收窄为向猎聘站内商业产品导流。因此本次调研重点不是泛泛比较 IM 平台，而是判断不同渠道对 **Lily / Hermes / Workbuddy 类产品形态** 的接入价值、能力边界与后续导流可行性。\n\n---\n\n## 1. 调研目标\n\n### 1.1 核心问题\n\n本次调研需要回答三个问题：\n\n1. **不同渠道如何接入？**  \n   飞书、企业微信、微信、钉钉分别支持哪些接入形态，例如机器人、应用、网页内嵌、消息回调、OAuth、链接跳转等。\n\n2. **接入后能做什么、不能做什么？**  \n   例如：\n   - Hermes 接入渠道后，主要能力可能是消息收发；\n   - 不能天然读取飞书文档、企业微信文档或钉钉文档；\n   - Workbuddy 如果只是 CLI 接入，则不能等同于“用户可在飞书里操作 Workbuddy”。\n\n3. **对 Lily 当前业务目标是否有价值？**  \n   当前 Lily 的关键业务链路是：\n\n```text\n职位访谈 → 生成搜索条件 / 关键词 → 搜索候选人\n→ HR 审阅候选人列表\n→ 需求校准\n→ 推荐意向人选 / 邀约 / 意向沟通等商业产品\n→ URL 跳转导流\n```\n\n因此需要判断各渠道是否有助于：\n\n- 降低 HR 进入 Lily 的门槛；\n- 承载对话式职位访谈；\n- 支持候选人列表、详情链接、商业产品 URL 的展示与点击；\n- 保留 source / 短链归因能力；\n- 避免把 Lily 的产品边界误判为“可在外部渠道内闭环招聘”。\n\n---\n\n## 2. 调研对象与产品形态边界\n\n### 2.1 渠道对象\n\n| 渠道 | 初步关注点 |\n|---|---|\n| 飞书 | 机器人、应用、消息卡片、文档权限、网页跳转、飞书内打开链接能力 |\n| 企业微信 | 企业内部应用、客户联系边界、机器人、消息回调、网页授权、外部联系人限制 |\n| 微信 | 公众号 / 小程序 / 服务号 / 企业微信外部联系人链路差异，普通微信开放能力较弱 |\n| 钉钉 | 企业内部应用、机器人、工作台入口、消息卡片、免登与网页跳转 |\n\n### 2.2 产品形态对象\n\n本次调研至少区分以下几类“接入产品”：\n\n| 产品 / 系统形态 | 当前理解 | 需要重点澄清 |\n|---|---|---|\n| Hermes | Lily 的底层对话系统，负责对话创建、消息管理等；对话与职位是“挂靠”关系，不是强绑定 | 接入外部渠道后是否只提供消息收发？是否支持上下文、附件、卡片、按钮、链接回传？ |\n| Lily / bagent | 猎聘企业版内 AI 招聘助手，当前核心目标是导流到站内商业产品 | 外部渠道是否只是入口补充？能否支持职位挂靠、job_id、summary、短链归因？ |\n| Workbuddy | 领导举例中提到的 CLI 形态产品 | CLI 接入和 IM 接入的能力边界是什么？是否只能执行命令，不能在飞书内完成可视化操作？ |\n| 站内商业产品 | 意向人选、邀约、意向沟通、云电话、IM 等 | 外部渠道能否承载跳转？source 参数和短链归因是否保持？ |\n\n---\n\n## 3. 建议分工\n\n假设“两个人”分别为 A / B，建议按“渠道能力调研”和“产品接入形态调研”拆分，最后合并成统一矩阵。\n\n### 3.1 分工方式一：按渠道拆分\n\n| 负责人 | 调研范围 | 产出 |\n|---|---|---|\n| A | 飞书、钉钉 | 两个平台的接入流程、开放能力、消息卡片、文档访问、网页跳转、权限机制 |\n| B | 企业微信、微信 | 企业微信 / 微信的接入流程、会话能力、网页授权、外部联系人限制、普通微信限制 |\n| A + B | 联合对比 Hermes / Lily / Workbuddy 的适配差异 | 汇总能力矩阵、推荐接入优先级、风险清单 |\n\n适合场景：希望快速覆盖四个渠道。\n\n### 3.2 分工方式二：按问题域拆分\n\n| 负责人 | 调研范围 | 产出 |\n|---|---|---|\n| A | 渠道接入流程 | 每个渠道从注册应用、配置回调、权限申请、上线审核到消息收发的完整流程 |\n| B | 能力差异与产品适配 | Hermes / Lily / Workbuddy 在各渠道中的能力边界、不可做事项、导流可行性 |\n| A + B | 联合输出方案 | 决策建议：哪些渠道适合做入口，哪些只适合通知，哪些不适合当前 Lily |\n\n适合场景：领导更关心“流程 + 能力差异”的结构化结论。\n\n### 3.3 推荐采用\n\n建议采用 **分工方式二**：\n\n- A 负责“怎么接”；\n- B 负责“接了能干什么、不能干什么”；\n- 最终共同沉淀一张“渠道 × 产品形态 × 能力边界”的对比表。\n\n原因：领导原话中同时强调“接入流程”和“能力差异”，按问题域拆更容易形成可决策产物。\n\n---\n\n## 4. 调研维度\n\n### 4.1 渠道接入流程维度\n\n每个渠道都按同一模板调研：\n\n| 维度 | 需要回答的问题 |\n|---|---|\n| 账号与主体 | 是否需要企业主体？是否需要管理员权限？个人开发者是否可调研？ |\n| 应用类型 | 支持机器人、企业内部应用、第三方应用、网页应用、小程序等哪些形态？ |\n| 创建流程 | 从创建应用到可发送消息，需要哪些步骤？ |\n| 权限申请 | 消息、用户信息、组织架构、文档、文件、链接打开分别需要什么权限？ |\n| 回调配置 | 是否支持事件订阅、消息回调、URL verification、加解密？ |\n| 消息收发 | 支持私聊、群聊、单聊、主动推送、被动回复吗？ |\n| 消息类型 | 支持文本、Markdown、卡片、按钮、文件、图片、富文本吗？ |\n| 文件能力 | 能否上传、下载、读取文件内容？文件权限是否独立？ |\n| 文档能力 | 是否能读取飞书文档 / 钉钉文档 / 企微文档？是否需要额外授权？ |\n| 网页打开 | 是否支持在渠道内打开 H5 / Web 页面？是否支持免登？ |\n| 用户身份 | 能否拿到用户 open_id / union_id / 企业内 user_id？是否能映射猎聘 B 端账号？ |\n| 审核上线 | 是否需要平台审核？审核周期多久？ |\n| 限流与稳定性 | 消息频率、接口 QPS、卡片大小、超时限制等 |\n| 日志与排障 | 是否有开发者后台日志？是否方便定位消息失败？ |\n\n---\n\n### 4.2 能力差异维度\n\n重点区分“看起来接入了”和“实际能操作”的差异。\n\n| 能力项 | 需要判断 |\n|---|---|\n| 消息收发 | 是否只是文本对话？是否支持流式输出？是否能展示 Thinking / 工具调用？ |\n| 上下文保持 | 是否能保持 session？是否能映射 Hermes 的 session / message？ |\n| 职位挂靠 | 是否能传递 job_id？是否能保持 Lily 中“对话与职位挂靠”的关系？ |\n| 候选人列表展示 | 是否能稳定展示姓名 + 详情 URL + 引导文案？是否支持表格 / 卡片？ |\n| 商业产品导流 | 是否能跳转意向人选、邀约、意向沟通、简历详情等站内 URL？ |\n| 归因能力 | 是否能保留 source 参数、短链 URL、同会话导流转化口径？ |\n| 文件能力 | 是否能支持 doc / docx / pdf？是否满足 Lily 当前 20MB 文件限制？ |\n| 权限边界 | 用户在外部渠道发消息，是否等同于已登录猎聘企业版？大概率不是，需要免登或账号绑定 |\n| 文档读取 | 能否读取飞书文档等内容？需明确：消息接入不等于文档读取 |\n| 操作闭环 | 能否在渠道里完成发起意向人选 / 邀约？还是只能跳转到企业版完成？ |\n| CLI 差异 | Workbuddy CLI 能力是否只是本地命令执行？不能误认为飞书内可视化操作 |\n\n---\n\n## 5. 结合 Lily 真实业务的重点判断\n\n### 5.1 Hermes 接入外部渠道的核心边界\n\n根据项目资料，Hermes 是 Lily 的底层对话平台，负责对话创建、消息管理等；对话与职位是“挂靠”关系，而不是强绑定。\n\n因此调研时需要重点确认：\n\n1. 外部渠道消息能否映射成 Hermes 的 session / message；\n2. 外部渠道用户身份能否与猎聘企业版 HR 用户绑定；\n3. 外部渠道中能否传递或选择企业版在招职位；\n4. 如果没有 job_id，Lily 的职位访谈、意向沟通、意向人选 / 邀约导流会受限；\n5. Hermes 接入渠道后，默认不代表可以读取飞书文档、企业微信文档或钉钉文档。\n\n### 5.2 Lily 当前不应被误判为外部渠道闭环产品\n\n当前 Lily 在 5/26 后已经从“独立 Agent 产品 / 端到端闭环”调整为“引流工具”，目标是向站内商业产品导流。\n\n所以调研结论中需要明确：\n\n- 外部渠道可以作为“触达入口”或“对话入口”；\n- 但不一定能承载完整招聘流程；\n- 意向人选、邀约、意向沟通等商业动作大概率仍需要跳转到猎聘企业版或对应站内页面；\n- 导流归因仍要关注 source 参数和短链 URL；\n- 不应承诺“在飞书 / 企微 / 钉钉内直接完成所有招聘操作”。\n\n### 5.3 Workbuddy CLI 接入的边界\n\n领导举例中提到：Workbuddy 接入后只是 CLI，不能通过飞书操作 Workbuddy。\n\n建议调研中单独列出：\n\n| 对比项 | CLI 接入 | IM / 渠道接入 |\n|---|---|---|\n| 交互入口 | 命令行 | 飞书 / 企微 / 微信 / 钉钉会话 |\n| 用户门槛 | 偏研发 / 内部用户 | 偏普通业务用户 |\n| 可视化能力 | 弱 | 取决于渠道卡片能力 |\n| 权限体系 | 本地或服务端权限 | 渠道身份 + 业务系统身份双重映射 |\n| 是否能在飞书操作 | 否，除非额外开发飞书机器人 / 应用 | 可以，但能力受渠道限制 |\n| 适合场景 | 工具调用、自动化脚本 | 消息通知、问答、轻交互、链接跳转 |\n\n---\n\n## 6. 输出物设计\n\n### 6.1 最终交付物\n\n建议最终输出 4 份内容：\n\n1. **渠道接入流程表**  \n   飞书 / 企业微信 / 微信 / 钉钉分别如何接入。\n\n2. **能力差异矩阵**  \n   横轴为渠道，纵轴为能力项，例如消息、卡片、文件、文档、网页跳转、身份、归因等。\n\n3. **产品适配结论**  \n   分别判断 Hermes、Lily、Workbuddy 适合怎么接。\n\n4. **推荐推进路径**  \n   给出 P0 / P1 / P2 优先级。\n\n---\n\n### 6.2 能力差异矩阵模板\n\n| 能力 / 渠道 | 飞书 | 企业微信 | 微信 | 钉钉 | 备注 |\n|---|---|---|---|---|---|\n| 机器人消息收发 | 待调研 | 待调研 | 待调研 | 待调研 | 区分群机器人和应用机器人 |\n| 私聊能力 | 待调研 | 待调研 | 待调研 | 待调研 | 是否能主动私聊用户 |\n| 群聊能力 | 待调研 | 待调研 | 待调研 | 待调研 | 是否支持群内 @ 机器人 |\n| Markdown | 待调研 | 待调研 | 待调研 | 待调研 | Lily 候选人链接可能依赖 Markdown 展示 |\n| 卡片 / 按钮 | 待调研 | 待调研 | 待调研 | 待调研 | 商业化产品卡片能力相关 |\n| 文件上传 | 待调研 | 待调研 | 待调研 | 待调研 | Lily 当前支持 doc/docx/pdf，20MB |\n| 文件内容读取 | 待调研 | 待调研 | 待调研 | 待调研 | 消息附件不等于可解析内容 |\n| 文档读取 | 待调研 | 待调研 | 待调研 | 待调研 | 重点验证“不能看飞书文档”这类边界 |\n| H5 / Web 打开 | 待调研 | 待调研 | 待调研 | 待调研 | Lily / 企业版页面跳转相关 |\n| 免登 / OAuth | 待调研 | 待调研 | 待调研 | 待调研 | 是否能映射猎聘 B 端账号 |\n| 用户身份获取 | 待调研 | 待调研 | 待调研 | 待调研 | open_id / union_id / user_id |\n| source 参数保留 | 待调研 | 待调研 | 待调研 | 待调研 | 导流归因关键 |\n| 短链跳转 | 待调研 | 待调研 | 待调研 | 待调研 | 董涛短链 URL 归因相关 |\n| 平台审核 | 待调研 | 待调研 | 待调研 | 待调研 | 上线周期风险 |\n| 限流 | 待调研 | 待调研 | 待调研 | 待调研 | 大模型响应与消息推送相关 |\n\n---\n\n## 7. 推进计划\n\n### Day 0：对齐调研口径\n\n| 事项 | 负责人 | 产出 |\n|---|---|---|\n| 明确调研目标：流程 + 能力差异 + Lily 适配 | A + B | 本文档确认版 |\n| 明确产品对象：Hermes / Lily / Workbuddy | A + B | 产品形态定义 |\n| 明确不做范围 | A + B | 不承诺渠道内招聘闭环、不承诺读取文档 |\n\n### Day 1：渠道资料调研\n\n| 事项 | 负责人 | 产出 |\n|---|---|---|\n| 飞书、钉钉官方文档梳理 | A | 接入流程初稿 |\n| 企业微信、微信官方文档梳理 | B | 接入流程初稿 |\n| 收集典型 Demo / SDK / API 限制 | A + B | 链接与备注 |\n\n### Day 2：能力验证与边界确认\n\n| 事项 | 负责人 | 产出 |\n|---|---|---|\n| 验证消息收发、卡片、按钮、文件能力 | A + B | 能力矩阵 v1 |\n| 验证文档读取是否需要额外权限 | A + B | 文档能力边界说明 |\n| 验证网页跳转、source 参数、短链可用性 | A + B | 导流可行性结论 |\n| 梳理 Hermes / Lily / Workbuddy 接入差异 | A + B | 产品适配表 |\n\n### Day 3：形成结论并汇报\n\n| 事项 | 负责人 | 产出 |\n|---|---|---|\n| 汇总接入流程 | A | 渠道接入流程表 |\n| 汇总能力差异 | B | 能力差异矩阵 |\n| 给出推荐路径 | A + B | P0 / P1 / P2 建议 |\n| 准备领导汇报版 | A + B | 1 页结论 + 附录明细 |\n\n---\n\n## 8. 推荐优先级判断框架\n\n### P0：必须先确认\n\n1. 外部渠道是否能稳定完成消息收发；\n2. 是否能映射 Hermes session / message；\n3. 是否能识别用户身份，并与猎聘企业版账号建立关系；\n4. 是否能带 job_id 或通过链接跳转回 Lily / 企业版；\n5. 是否能保留导流归因参数 source / 短链 URL；\n6. 是否存在平台审核、权限申请、限流等上线风险。\n\n### P1：影响体验\n\n1. 是否支持 Markdown / 卡片；\n2. 是否支持按钮交互；\n3. 是否支持文件上传与下载；\n4. 是否支持渠道内打开 H5；\n5. 是否能展示候选人列表、详情链接和引导提示文案。\n\n### P2：后续增强\n\n1. 文档读取；\n2. 群内多人协作；\n3. 消息通知；\n4. 更复杂的工作流触发；\n5. 渠道内半闭环操作。\n\n---\n\n## 9. 初步假设结论\n\n> 以下为调研前假设，需通过官方文档和 Demo 验证。\n\n1. **Hermes 接入渠道后，大概率首先解决消息收发问题**，但不天然具备读取飞书文档、钉钉文档或企业微信文档的能力。\n\n2. **Lily 当前业务目标是导流，不是外部渠道内闭环**。因此各渠道最现实的价值是：\n   - 作为 HR 触达入口；\n   - 承载轻量职位访谈；\n   - 返回候选人链接或商业产品链接；\n   - 引导回猎聘企业版完成意向人选、邀约、意向沟通等动作。\n\n3. **Workbuddy 如果只是 CLI，不能等同于飞书 / 企微内可操作产品**。若要在飞书中操作 Workbuddy，需要额外建设飞书机器人或飞书应用。\n\n4. **对 Lily 最关键的不是“能不能接入 IM”，而是接入后能否保留 job_id、summary、source、短链归因等业务链路关键字段**。\n\n5. **渠道能力差异会直接影响候选人列表与商业化产品引导体验**。如果某渠道不支持卡片或按钮，则只能用 Markdown 链接和引导文案兜底，这与 Lily 当前“候选人列表兜底方案：姓名 + 详情页 URL + 引导提示文案”一致。\n\n---\n\n## 10. 建议汇报结构\n\n最终给领导汇报时建议控制为 5 页：\n\n1. **结论页**：哪个渠道最适合先接，哪个风险最大；\n2. **接入流程页**：四个渠道从创建应用到上线的流程差异；\n3. **能力矩阵页**：消息、卡片、文件、文档、跳转、身份、归因；\n4. **产品适配页**：Hermes / Lily / Workbuddy 分别能做什么、不能做什么；\n5. **推进建议页**：P0 验证项、负责人、时间表、风险。\n\n---\n\n## 11. 下一步行动项\n\n| 优先级 | 行动项 | 负责人 | 截止时间 |\n|---|---|---|---|\n| P0 | 确认调研模板和分工方式 | A + B | 今日 |\n| P0 | 梳理飞书 / 钉钉接入流程 | A | Day 1 |\n| P0 | 梳理企业微信 / 微信接入流程 | B | Day 1 |\n| P0 | 输出第一版能力差异矩阵 | A + B | Day 2 |\n| P0 | 验证 Hermes 消息收发与 session 映射假设 | A + B / 研发支持 | Day 2 |\n| P0 | 验证 Lily 导流链路中的 job_id、summary、source、短链 URL 是否可保留 | A + B / 研发支持 | Day 2 |\n| P1 | 明确 Workbuddy CLI 与 IM 接入的边界 | B | Day 2 |\n| P1 | 输出领导汇报版 | A + B | Day 3 |\n\n---\n\n## 12. 口径提醒\n\n对外或向领导汇报时建议统一口径：\n\n> 本次调研不是判断“哪个 IM 平台最好”，而是判断不同渠道在接入 Hermes / Lily / Workbuddy 这类 Agent 产品时，分别能承载到哪一层能力。尤其要区分消息收发、文档读取、CLI 调用、站内商业产品导流这几类能力，避免把“接入渠道”误解为“在渠道内完整闭环招聘流程”。",
+      "icon": "📄",
+      "x": 80,
+      "y": 470
     }
   ],
-  "workflow": null
+  "workflow": {
+    "id": "q-1788749052880",
+    "status": "approved",
+    "request": "测试工作流",
+    "skills": [
+      "project-context-maintainer"
+    ],
+    "question": {
+      "type": "ask_user_question",
+      "id": "q-1788749052880",
+      "question": "这项工作需要先确认范围：测试工作流",
+      "options": [
+        {
+          "id": "draft",
+          "label": "先出初稿",
+          "description": "快速形成可讨论的主要文档"
+        },
+        {
+          "id": "deep",
+          "label": "完整分析",
+          "description": "并行执行相关 Skill，并进行严格导师审核"
+        },
+        {
+          "id": "report",
+          "label": "直接做汇报",
+          "description": "优先生成面向汇报对象的结构化内容"
+        }
+      ]
+    },
+    "answer": "draft",
+    "document": "已按 draft 生成一张调研推进卡片，围绕 Lily/bagent 当前从 Agent 闭环转为导流工具的真实背景，拆解了飞书/企微/微信/钉钉等渠道接入的流程、能力差异、分工与推进计划。",
+    "review": {
+      "status": "approved",
+      "issues": [],
+      "checkedSkills": [
+        "project-context-maintainer"
+      ],
+      "reviewer": "PM Mentor"
+    }
+  }
 }

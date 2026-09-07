@@ -107,7 +107,7 @@ function selectSkills(text) {
   if (/会议|纪要|录音|todo|行动项/.test(text)) skills.push('meeting-notes-organizer');
   if (/prd|需求文档|评审前|写需求/i.test(text)) skills.push('prd-writer');
   if (/评审|反馈|验收标准/.test(text)) skills.push('prd-review-handler');
-  if (/任务|推进|拆解|安排/.test(text)) skills.push('task-arrangement-planner');
+  if (/任务|推进|拆解|安排|领导|分一下|分工|调研|对齐|工作节奏/.test(text)) skills.push('task-arrangement-planner');
   if (/汇报|通知|周报|同步|风险/.test(text)) skills.push('update-writer');
   if (/复盘|沟通表现/.test(text)) skills.push('meeting-coach');
   if (/ai|agent|大模型/i.test(text)) skills.push('ai-pm-prd-builder');

@@ -60,7 +60,7 @@ def select_skills(text: str) -> list[str]:
         skills.append("prd-writer")
     if re.search(r"评审|反馈|验收标准", text):
         skills.append("prd-review-handler")
-    if re.search(r"任务|推进|拆解|安排", text):
+    if re.search(r"任务|推进|拆解|安排|领导|分一下|分工|调研|对齐|工作节奏", text):
         skills.append("task-arrangement-planner")
     if re.search(r"汇报|通知|周报|同步|风险", text):
         skills.append("update-writer")
