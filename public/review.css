@@ -190,8 +190,10 @@ button {
     transform: translateY(0);
   }
 }
-.chat-hidden { grid-template-columns: 250px 0 minmax(0, 1fr) !important; }
+.chat-hidden { grid-template-columns: 250px minmax(0, 1fr) !important; }
 .chat-hidden .chat { display: none; }
+.chat-hidden .left { grid-column: 1; grid-row: 1; }
+.chat-hidden .canvas { grid-column: 2; grid-row: 1; min-width: 0; }
 .chat-visibility-toggle { width: 100%; margin: 12px 0 4px; padding: 7px 9px; border: 1px solid #d6deeb; border-radius: 8px; background: #fff; color: #526174; text-align: left; cursor: pointer; }
 .chat-visibility-toggle:hover { border-color: #9cb5ff; color: #4267e8; }
 .sidebar-collapsed .chat-visibility-toggle { display: none; }
