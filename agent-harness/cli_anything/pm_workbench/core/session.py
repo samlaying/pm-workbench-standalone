@@ -25,3 +25,12 @@ def clear_chat_history(client: WorkbenchClient) -> dict[str, Any]:
 
 def new_chat_session(client: WorkbenchClient) -> dict[str, Any]:
     return client.new_chat()
+
+
+def list_conversations(client: WorkbenchClient) -> list[dict[str, Any]]:
+    return client.list_conversations()
+
+
+def open_conversation(client: WorkbenchClient, conversation_id: str) -> dict[str, Any]:
+    return client.open_conversation(conversation_id)
+

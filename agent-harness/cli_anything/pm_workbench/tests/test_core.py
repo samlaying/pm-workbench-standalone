@@ -221,12 +221,51 @@ def test_new_chat_session(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     client = WorkbenchClient(force_local=True)
     state = client.load_local_state()
     state["messages"] = [{"role": "user", "text": "hello"}]
+    state["cards"] = [{"id": "c1", "title": "Card 1"}]
     state["workflow"] = {"status": "running"}
     client.save_local_state(state)
 
     res = new_chat_session(client)
     assert res["messages"] == []
+    assert res["cards"] == []
     assert res["workflow"] is None
+    # Verify that previous session was archived into conversations
+    assert len(res["conversations"]) == 1
+    assert res["conversations"][0]["title"] == "hello"
+    assert len(res["conversations"][0]["cards"]) == 1
+
+
+def test_conversation_list_and_open(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    from cli_anything.pm_workbench.core.session import list_conversations, open_conversation
+
+    mock_data_file = tmp_path / "data" / "workspace.json"
+    monkeypatch.setattr("cli_anything.pm_workbench.core.client.get_data_file", lambda: mock_data_file)
+
+    client = WorkbenchClient(force_local=True)
+    state = client.load_local_state()
+    state["conversations"] = [
+        {
+            "id": "chat-100",
+            "title": "历史对话 1",
+            "messages": [{"role": "user", "text": "旧问题"}],
+            "cards": [{"id": "c-old", "title": "旧卡片"}],
+        }
+    ]
+    state["messages"] = []
+    state["cards"] = []
+    client.save_local_state(state)
+
+    convs = list_conversations(client)
+    assert len(convs) == 1
+    assert convs[0]["id"] == "chat-100"
+
+    opened = open_conversation(client, "chat-100")
+    assert opened["currentConversationId"] == "chat-100"
+    assert len(opened["messages"]) == 1
+    assert opened["messages"][0]["text"] == "旧问题"
+    assert len(opened["cards"]) == 1
+    assert opened["cards"][0]["title"] == "旧卡片"
+
 
 
 def test_analyze_project_proactive_recommendations():

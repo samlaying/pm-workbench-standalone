@@ -291,8 +291,32 @@ class WorkbenchClient:
         self.save_local_state(state)
         return {"workflow": workflow, "cards": state.get("cards", [])}
 
+    def list_conversations(self) -> list[dict[str, Any]]:
+        state = self.get_state()
+        return state.get("conversations", [])
+
+    def open_conversation(self, conversation_id: str) -> dict[str, Any]:
+        """Switch to a specific conversation, restoring its messages and canvas cards."""
+        if self.is_server_available() and not self.dry_run:
+            try:
+                resp = requests.post(f"{self.base_url}/api/chat/open", json={"id": conversation_id}, timeout=10.0)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception:
+                pass
+        state = self.load_local_state()
+        conversations = state.get("conversations", [])
+        target = next((c for c in conversations if c.get("id") == conversation_id), None)
+        if not target:
+            raise ValueError(f"对话不存在：{conversation_id}")
+        state["messages"] = list(target.get("messages", []))
+        state["cards"] = list(target.get("cards", []))
+        state["currentConversationId"] = target.get("id")
+        self.save_local_state(state)
+        return state
+
     def new_chat(self) -> dict[str, Any]:
-        """Start a new chat session by clearing conversation history and resetting workflow."""
+        """Start a new chat session by archiving current messages/canvas and resetting state."""
         if self.is_server_available() and not self.dry_run:
             try:
                 resp = requests.post(f"{self.base_url}/api/chat/new", timeout=10.0)
@@ -301,8 +325,27 @@ class WorkbenchClient:
             except Exception:
                 pass
         state = self.load_local_state()
+        messages = state.get("messages", [])
+        cards = state.get("cards", [])
+        if messages or cards:
+            first_user_msg = next((m.get("text", "") for m in messages if m.get("role") == "user"), "新对话")
+            title = first_user_msg[:32] if first_user_msg else "新对话"
+            now_ms = int(time.time() * 1000)
+            conv_id = f"chat-{now_ms}-{os.urandom(3).hex()}"
+            saved_conv = {
+                "id": conv_id,
+                "title": title,
+                "messages": list(messages),
+                "cards": list(cards),
+                "createdAt": now_ms,
+                "updatedAt": now_ms,
+            }
+            conversations = state.get("conversations", [])
+            state["conversations"] = [*conversations, saved_conv]
         state["messages"] = []
+        state["cards"] = []
         state["workflow"] = None
+        state["currentConversationId"] = f"main-{int(time.time() * 1000)}"
         self.save_local_state(state)
         return state
 

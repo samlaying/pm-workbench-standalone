@@ -30,7 +30,9 @@ from cli_anything.pm_workbench.core.project import (
 from cli_anything.pm_workbench.core.session import (
     clear_chat_history,
     get_chat_history,
+    list_conversations,
     new_chat_session,
+    open_conversation,
     send_chat_message,
 )
 from cli_anything.pm_workbench.utils.repl_skin import ReplSkin
@@ -336,11 +338,65 @@ def chat_new(ctx: click.Context, project: str | None):
     result = new_chat_session(client)
 
     def show(res):
-        skin.success("已开启新会话，可以开始推演新的需求")
+        skin.success("已开启新会话，前序卡片与消息已自动归档")
         skin.status("绑定项目", res.get("projectPath") or "(未绑定)")
         skin.status("画板卡片数量", str(len(res.get("cards", []))))
+        skin.status("当前历史会话数", str(len(res.get("conversations", []))))
 
     print_output(ctx, result, show)
+
+
+@chat.command("list")
+@click.pass_context
+def chat_list(ctx: click.Context):
+    """List all saved conversations and their associated cards."""
+    client: WorkbenchClient = ctx.obj["client"]
+    skin: ReplSkin = ctx.obj["skin"]
+    conversations = list_conversations(client)
+    state = client.get_state()
+    current_id = state.get("currentConversationId", "")
+
+    def show(items):
+        if not items:
+            skin.info("当前暂无历史会话（在有消息/卡片时执行 chat new 会自动归档）")
+            return
+        headers = ["会话 ID", "标题", "消息数", "卡片数", "当前"]
+        rows = []
+        for c in items:
+            cid = str(c.get("id", ""))
+            is_active = "★ 当前" if cid == current_id else ""
+            rows.append([
+                cid,
+                c.get("title", "未命名"),
+                f"{len(c.get('messages', []))} 条",
+                f"{len(c.get('cards', []))} 张",
+                is_active
+            ])
+        skin.table(headers, rows)
+
+    print_output(ctx, conversations, show)
+
+
+@chat.command("open")
+@click.argument("conversation_id")
+@click.pass_context
+def chat_open(ctx: click.Context, conversation_id: str):
+    """Switch to a saved conversation, restoring its messages and canvas cards."""
+    client: WorkbenchClient = ctx.obj["client"]
+    skin: ReplSkin = ctx.obj["skin"]
+    try:
+        result = open_conversation(client, conversation_id)
+    except Exception as exc:
+        skin.error(f"切换会话失败: {exc}")
+        return
+
+    def show(res):
+        skin.success(f"已恢复会话 [{conversation_id}]")
+        skin.status("恢复消息数", str(len(res.get("messages", []))))
+        skin.status("恢复卡片数", str(len(res.get("cards", []))))
+
+    print_output(ctx, result, show)
+
 
 
 # ── Card / Canvas commands ────────────────────────────────────
