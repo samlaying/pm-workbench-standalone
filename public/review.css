@@ -3,6 +3,8 @@ button { cursor: pointer; }
 .messages { min-height: 0; overflow-y: auto; overflow-x: hidden; }
 .left footer button { display: block; width: 100%; padding: 5px 0; border: 0; background: transparent; color: #526174; text-align: left; font: inherit; cursor: pointer; }
 .left footer button:hover { color: #4267e8; }
+.left { position: relative; }
+.left .collapse-sidebar { position: absolute; right: 8px; top: 10px; }
 .question-card { position: absolute; left: 20px; right: 20px; bottom: 130px; z-index: 5; padding: 16px; border: 1px solid #b8c9ff; border-radius: 14px; background: #f7f9ff; box-shadow: 0 10px 30px #263f6126; }
 .question-card p { margin: 8px 0 12px; }
 .question-card button { display: flex; flex-direction: column; gap: 2px; min-width: 30%; padding: 9px 12px; border: 1px solid #cbd7f4; border-radius: 9px; background: white; text-align: left; cursor: pointer; }
