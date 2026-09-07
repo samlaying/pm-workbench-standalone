@@ -1,15 +1,40 @@
 import { createServer } from 'node:http';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync, statSync, watch } from 'node:fs';
 import { resolve, join, basename } from 'node:path';
 import { homedir } from 'node:os';
 
 const root = new URL('.', import.meta.url).pathname;
 const dataFile = join(root, 'data', 'workspace.json');
 const initial = { projectPath: '', projects: [], messages: [], cards: [] };
+const subscribers = new Set();
+
+function broadcastState(state) {
+  const payload = `data: ${JSON.stringify({ type: 'state', state })}\n\n`;
+  for (const res of subscribers) {
+    try { res.write(payload); } catch { subscribers.delete(res); }
+  }
+}
 
 async function load() { try { return JSON.parse(await readFile(dataFile, 'utf8')); } catch { return structuredClone(initial); } }
-async function save(state) { await mkdir(join(root, 'data'), { recursive: true }); await writeFile(dataFile, JSON.stringify(state, null, 2) + '\n'); }
+async function save(state) {
+  await mkdir(join(root, 'data'), { recursive: true });
+  await writeFile(dataFile, JSON.stringify(state, null, 2) + '\n');
+  broadcastState(state);
+}
+
+try {
+  let fileTimer;
+  watch(dataFile, () => {
+    clearTimeout(fileTimer);
+    fileTimer = setTimeout(async () => {
+      try {
+        const state = await load();
+        broadcastState(state);
+      } catch {}
+    }, 150);
+  });
+} catch {}
 function parseCredentialRefs(text) {
   const refs = {};
   for (const line of text.split('\n')) {
@@ -116,6 +141,13 @@ const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
     if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, await load());
+    if (req.method === 'GET' && url.pathname === '/api/events') {
+      res.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache', connection: 'keep-alive' });
+      subscribers.add(res);
+      req.on('close', () => subscribers.delete(res));
+      res.write(`data: ${JSON.stringify({ type: 'state', state: await load() })}\n\n`);
+      return;
+    }
     if (req.method === 'POST' && url.pathname === '/api/bind') {
       const input = await body(req); const path = resolve(String(input.path || ''));
       const state = await load(); state.projectPath = path; state.projects = path ? [scanProject(path)] : []; await save(state); return json(res, 200, state);

@@ -679,10 +679,53 @@ function wire() {
   });
 }
 
+function initLiveSync() {
+  let es = null;
+  const connect = () => {
+    if (es) try { es.close(); } catch {}
+    es = new EventSource('/api/events');
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'state' && data.state) {
+          if (!drag && !panning && !sending) {
+            const hasChanged = JSON.stringify(data.state) !== JSON.stringify(state);
+            if (hasChanged) {
+              state = data.state;
+              render();
+            }
+          }
+        }
+      } catch {}
+    };
+    es.onerror = () => {
+      try { es.close(); } catch {}
+      setTimeout(connect, 3000);
+    };
+  };
+  connect();
+
+  window.addEventListener('focus', () => {
+    fetch('/api/state')
+      .then(r => r.json())
+      .then(next => {
+        if (!drag && !panning && !sending) {
+          const hasChanged = JSON.stringify(next) !== JSON.stringify(state);
+          if (hasChanged) {
+            state = next;
+            render();
+          }
+        }
+      })
+      .catch(() => {});
+  });
+}
+
 fetch('/api/state')
   .then(r => r.json())
   .then(next => {
     state = next;
     render();
+    initLiveSync();
   })
   .catch(e => showError(`加载数据失败：${e.message}`));
