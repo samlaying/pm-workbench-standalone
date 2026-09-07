@@ -575,6 +575,15 @@ function wire() {
     button.onclick = () => document.querySelector('#bind').click();
   });
 
+  document.querySelectorAll('.btn-project-action[title="在画板聚焦此项目"]').forEach(button => {
+    button.onclick = () => {
+      const root = document.querySelector('#app');
+      root?.classList.add('chat-hidden');
+      localStorage.setItem('pm-chat-hidden', '1');
+      requestAnimationFrame(() => document.querySelector('.canvas')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    };
+  });
+
   document.querySelector('#composer').onsubmit = async event => {
     event.preventDefault();
     const text = document.querySelector('#text').value.trim();
