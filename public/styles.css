@@ -685,37 +685,46 @@ button, input, textarea {
   min-height: 1800px;
 }
 
-/* PM Card Design */
+/* PM Card Design (Miro / FigJam Whiteboard Style) */
 .card {
   position: absolute;
-  width: 440px;
-  min-height: 240px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  width: 460px;
+  min-height: 220px;
+  background: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.85);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
   overflow: hidden;
   user-select: none;
   display: flex;
   flex-direction: column;
-  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+  transition: box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, transform 0.2s ease;
+  backdrop-filter: blur(10px);
 }
 
 .card:hover {
-  border-color: var(--border-active);
-  box-shadow: var(--shadow-lg);
+  border-color: #94a3b8;
+  box-shadow: 0 18px 42px -6px rgba(15, 23, 42, 0.14), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
+}
+
+.card.card-dragging {
+  cursor: grabbing !important;
+  box-shadow: 0 24px 50px -8px rgba(15, 23, 42, 0.22), 0 12px 24px -4px rgba(15, 23, 42, 0.1);
+  transform: scale(1.02);
+  z-index: 100 !important;
 }
 
 .card > header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  background: var(--bg-card-header);
-  border-bottom: 1px solid var(--border-default);
+  padding: 12px 16px;
+  background: rgba(248, 250, 252, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #edf2f7;
   font-size: var(--text-sm);
   font-weight: 600;
-  color: var(--text-primary);
+  color: #0f172a;
   cursor: grab;
 }
 
@@ -734,12 +743,12 @@ button, input, textarea {
 }
 
 .card-title-group svg {
-  color: var(--accent-600);
+  color: #2563eb;
   flex-shrink: 0;
 }
 
 .card-icon {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
   display: inline-flex;
   align-items: center;
@@ -749,13 +758,13 @@ button, input, textarea {
 .card-agent-badge {
   display: inline-flex;
   align-items: center;
-  padding: 1px 6px;
+  padding: 2px 8px;
   border-radius: 9999px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  background: var(--accent-50);
-  color: var(--accent-700);
-  border: 1px solid var(--accent-200);
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
   margin-left: 4px;
   white-space: nowrap;
   flex-shrink: 0;
@@ -765,182 +774,150 @@ button, input, textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border: none;
-  border-radius: var(--radius-xs);
+  border-radius: 9999px;
   background: transparent;
-  color: var(--text-muted);
+  color: #94a3b8;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .card-close-btn:hover {
-  background: var(--color-slate-200);
-  color: var(--text-primary);
+  background: #fee2e2;
+  color: #ef4444;
 }
 
 /* Card Body with Markdown Typography */
 .card-body {
-  padding: 14px 16px;
+  padding: 16px 20px;
   flex: 1 1 auto;
-  font-size: var(--text-xs);
-  line-height: 1.65;
-  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+  color: #334155;
   overflow-y: auto;
-  max-height: 480px;
+  max-height: 440px;
   user-select: text;
 }
 
 .card-body h1, .card-body h2, .card-body h3, .card-body h4 {
-  color: var(--text-primary);
+  color: #0f172a;
   font-weight: 600;
-  margin: 12px 0 6px;
+  margin: 14px 0 8px;
   line-height: 1.35;
 }
 
-.card-body h1 { font-size: var(--text-md); }
-.card-body h2 { font-size: var(--text-sm); border-bottom: 1px solid var(--border-subtle); padding-bottom: 4px; }
-.card-body h3 { font-size: var(--text-xs); }
+.card-body h1 { font-size: 16px; border-bottom: 1px solid #edf2f7; padding-bottom: 4px; }
+.card-body h2 { font-size: 14px; border-bottom: 1px solid #edf2f7; padding-bottom: 4px; }
+.card-body h3 { font-size: 13px; }
 
 .card-body p {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 }
 
 .card-body ul, .card-body ol {
-  margin: 0 0 8px;
-  padding-left: 18px;
+  margin: 0 0 10px;
+  padding-left: 20px;
 }
 
 .card-body li {
-  margin-bottom: 4px;
+  margin-bottom: 5px;
 }
 
 .card-body code {
   font-family: var(--font-mono);
   font-size: 11px;
-  background: var(--color-slate-100);
-  color: var(--text-primary);
-  padding: 2px 4px;
-  border-radius: 3px;
-  border: 1px solid var(--border-default);
+  background: #f1f5f9;
+  color: #0f172a;
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
 }
 
 .card-body pre {
   font-family: var(--font-mono);
-  font-size: 11px;
-  background: var(--color-slate-50);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  padding: 8px 10px;
+  font-size: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
   overflow-x: auto;
-  margin: 8px 0;
+  margin: 10px 0;
 }
 
 .card-body blockquote {
-  margin: 8px 0;
-  padding: 4px 10px;
-  border-left: 3px solid var(--accent-500);
-  background: var(--color-slate-50);
-  color: var(--text-muted);
+  margin: 10px 0;
+  padding: 6px 12px;
+  border-left: 3px solid #3b82f6;
+  background: #f8fafc;
+  color: #64748b;
+  border-radius: 0 6px 6px 0;
 }
 
 .card-body table {
   width: 100%;
   border-collapse: collapse;
-  margin: 8px 0;
-  font-size: 11px;
+  margin: 10px 0;
+  font-size: 12px;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .card-body th, .card-body td {
-  border: 1px solid var(--border-default);
-  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  padding: 6px 10px;
   text-align: left;
 }
 
 .card-body th {
-  background: var(--color-slate-100);
+  background: #f8fafc;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #0f172a;
 }
 
 .card footer {
-  padding: 8px 14px 12px;
+  padding: 10px 16px 14px;
   display: flex;
+  align-items: center;
   gap: 8px;
-  background: var(--bg-card);
-  border-top: 1px solid var(--border-subtle);
+  background: #ffffff;
+  border-top: 1px solid #f1f5f9;
+  flex-wrap: wrap;
 }
 
 .card footer button {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: var(--bg-app);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  padding: 4px 8px;
-  font-size: var(--text-xs);
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: #334155;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .card footer button:hover {
-  background: var(--color-slate-100);
-  border-color: var(--border-active);
-  color: var(--text-primary);
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
-/* Zoom Toolbar */
-.zoom {
-  position: absolute;
-  right: 20px;
-  bottom: 20px;
-  padding: 6px 10px;
-  background: var(--bg-app);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  z-index: 5;
+.card footer button.btn-card-primary {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #2563eb;
+  font-weight: 600;
 }
 
-.zoom button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border-default);
-  background: var(--bg-app);
-  border-radius: var(--radius-sm);
-  padding: 3px 7px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.zoom button:hover {
-  background: var(--color-slate-100);
-  color: var(--text-primary);
-}
-
-.zoom input[type="range"] {
-  width: 110px;
-  accent-color: var(--accent-600);
-}
-
-.zoom b {
-  font-size: var(--text-xs);
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  color: var(--text-secondary);
-  min-width: 36px;
-  text-align: right;
+.card footer button.btn-card-primary:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1d4ed8;
 }
 
 /* Responsive */

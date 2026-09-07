@@ -1,5 +1,7 @@
 const app = document.querySelector('#app');
-let state = { projects: [], messages: [], cards: [], graph: { nodes: [], edges: [] } }, scale = 1, pan = { x: 0, y: 0 }, drag = null, panning = null, sending = false, canvasMode = 'conversation';
+let state = { projects: [], messages: [], cards: [], graph: { nodes: [], edges: [] } },
+  scale = 1, pan = { x: 0, y: 0 }, drag = null, panning = null, sending = false,
+  canvasMode = 'conversation', showLinks = true, zenMode = false;
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const position = value => Number.isFinite(Number(value)) ? Math.max(-2000, Math.min(5000, Number(value))) : 0;
@@ -27,7 +29,13 @@ function icon(name, size = 16) {
     paperclip: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`,
     chevronDown: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`,
     chevronRight: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>`,
-    alert: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`
+    alert: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`,
+    copy: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`,
+    check: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    book: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>`,
+    layout: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>`,
+    link: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+    chat: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>`
   };
   return icons[name] || '';
 }
@@ -122,6 +130,39 @@ function formatInline(str) {
   return s;
 }
 
+function boardWiresMarkup() {
+  if (!showLinks) return '';
+  const cards = state.cards || [];
+  if (cards.length < 2) return '';
+  
+  // Sort cards from left to right to build an intuitive flow
+  const sorted = [...cards].sort((a, b) => (a.x || 0) - (b.x || 0));
+  let wires = '';
+  
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const from = sorted[i];
+    const to = sorted[i + 1];
+    const x1 = (from.x || 0) + 460;
+    const y1 = (from.y || 0) + 40;
+    const x2 = (to.x || 0);
+    const y2 = (to.y || 0) + 40;
+    const dx = Math.max(40, Math.abs(x2 - x1) * 0.45);
+    const d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+    wires += `<path class="board-wire board-wire-active" d="${d}" marker-end="url(#board-arrow)" />`;
+  }
+  
+  return `
+    <svg class="board-wires" width="4000" height="3000">
+      <defs>
+        <marker id="board-arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,1 L8,4.5 L0,8 z" fill="#3b82f6" />
+        </marker>
+      </defs>
+      ${wires}
+    </svg>
+  `;
+}
+
 function graphMarkup(graph) {
   const nodes = graph?.nodes || [], edges = graph?.edges || [], byId = new Map(nodes.map(node => [node.id, node]));
   const wires = edges.map(edge => { const a = byId.get(edge.source), b = byId.get(edge.target); if (!a || !b) return ''; const p = a.position || { x: 0, y: 0 }, q = b.position || { x: 0, y: 0 }; return '<path class="graph-wire" d="M ' + (p.x + 280) + ' ' + (p.y + 52) + ' C ' + (p.x + 360) + ' ' + (p.y + 52) + ', ' + (q.x - 80) + ' ' + (q.y + 52) + ', ' + q.x + ' ' + (q.y + 52) + '" marker-end="url(#graph-arrow)"><title>' + esc(edge.reason || 'Agent 上下文关联') + '</title></path>'; }).join('');
@@ -129,12 +170,73 @@ function graphMarkup(graph) {
   return '<div class="graph-viewport" id="graph-viewport"><div class="graph-world" id="graph-world" style="transform:translate(' + pan.x + 'px,' + pan.y + 'px) scale(' + scale + ')"><svg class="graph-wires" width="1800" height="1500"><defs><marker id="graph-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#a6b6df"/></marker></defs>' + wires + '</svg>' + (cards || '<p class="muted graph-empty">输入一个明确需求后，Agent 会自动生成项目需求图。</p>') + '</div></div>';
 }
 
+function showToast(message, type = 'info') {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  const iconName = type === 'success' ? 'check' : type === 'error' ? 'alert' : 'sparkles';
+  toast.innerHTML = `${icon(iconName, 15)} <span>${esc(message)}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-10px) scale(0.95)';
+    setTimeout(() => toast.remove(), 200);
+  }, 3500);
+}
+
 function showError(message) {
-  const error = document.createElement('div');
-  error.className = 'error';
-  error.innerHTML = `${icon('alert', 16)} <div>${esc(message)}</div>`;
-  app.append(error);
-  setTimeout(() => error.remove(), 6000);
+  showToast(message, 'error');
+}
+
+function openDeliverableDrawer(card) {
+  document.querySelector('.reader-drawer-overlay')?.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'reader-drawer-overlay';
+  overlay.innerHTML = `
+    <div class="reader-drawer">
+      <div class="reader-drawer-header">
+        <div class="reader-drawer-title">
+          <span style="font-size:20px;">${card.icon ? esc(card.icon) : icon('file-text', 20)}</span>
+          <h2>${esc(card.title)}</h2>
+        </div>
+        <div class="reader-drawer-actions">
+          <button class="reader-drawer-btn btn-primary" id="btn-drawer-copy">${icon('copy', 14)} 复制全文</button>
+          <button class="reader-drawer-btn" id="btn-drawer-cite">${icon('chat', 14)} 引用到对话</button>
+          <button class="reader-drawer-btn" id="btn-drawer-close">${icon('x', 16)} 关闭</button>
+        </div>
+      </div>
+      <div class="reader-drawer-body">
+        ${renderMarkdown(card.body)}
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.querySelector('#btn-drawer-close').onclick = () => overlay.remove();
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+
+  overlay.querySelector('#btn-drawer-copy').onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(card.body);
+      showToast('已复制全文 Markdown 到剪贴板', 'success');
+    } catch {
+      showToast('复制失败，请手动选择复制', 'error');
+    }
+  };
+
+  overlay.querySelector('#btn-drawer-cite').onclick = () => {
+    overlay.remove();
+    const input = document.querySelector('#text');
+    if (input) {
+      input.value = `@${card.title} `;
+      input.focus();
+    }
+  };
 }
 
 function showQuestion(question) {
@@ -284,15 +386,17 @@ function render() {
         ${(state.graph?.edges || []).length ? `<div class="graph-edge-list"><b>Agent 自动关联</b>${state.graph.edges.slice(-8).map(edge => `<div>↳ ${esc(edge.kind)} · ${esc(edge.reason || '上下文关联')}</div>`).join('')}</div>` : ''}
       </div>
       <div id="board" class="board ${canvasMode === 'project' ? 'hidden' : ''}" style="transform:translate(${pan.x}px,${pan.y}px) scale(${scale})">
+        ${boardWiresMarkup()}
         ${state.cards.map(raw => {
           const c = cardData(raw);
-          const badge = c.skillLabel || c.skill ? `<span class="card-agent-badge">${esc(c.skillLabel || c.skill)}</span>` : '';
+          const isTemplate = (c.title || '').includes('最终交付模版') || (c.title || '').includes('模版') || (c.title || '').includes('交付');
+          const badge = c.skillLabel || c.skill ? `<span class="card-agent-badge ${isTemplate ? 'card-template-badge' : ''}">${esc(c.skillLabel || c.skill)}</span>` : '';
           const sourceBadge = c.sourceConversationTitle && c.sourceConversationTitle !== '当前对话' ? `<span class="card-source-badge" title="来自历史会话: ${esc(c.sourceConversationTitle)}">${esc(c.sourceConversationTitle)}</span>` : '';
           return `
-            <article class="card" data-id="${esc(c.id)}" style="left:${c.x}px;top:${c.y}px">
+            <article class="card ${isTemplate ? 'card-deliverable-highlight' : ''}" data-id="${esc(c.id)}" style="left:${c.x}px;top:${c.y}px">
               <header>
                 <div class="card-title-group">
-                  <span class="card-icon">${c.icon ? esc(c.icon) : icon('file-text', 14)}</span>
+                  <span class="card-icon">${c.icon ? esc(c.icon) : icon('file-text', 15)}</span>
                   <b>${esc(c.title)}</b>
                   ${badge}
                   ${sourceBadge}
@@ -301,21 +405,26 @@ function render() {
               </header>
               <div class="card-body" contenteditable="true" spellcheck="false">${renderMarkdown(c.body)}</div>
               <footer>
-                <button data-action="preview" data-id="${esc(c.id)}">${icon('eye', 13)} 预览</button>
-                <button data-action="edit" data-id="${esc(c.id)}">${icon('edit', 13)} 就地编辑</button>
-                <button data-action="sync" data-id="${esc(c.id)}">${icon('refresh', 13)} 引用修改</button>
+                <button class="btn-card-primary" data-action="read" data-id="${esc(c.id)}" title="全屏沉浸阅读">${icon('book', 13)} 全屏阅读</button>
+                <button data-action="copy" data-id="${esc(c.id)}" title="复制 Markdown">${icon('copy', 13)} 复制</button>
+                <button data-action="edit" data-id="${esc(c.id)}" title="就地编辑">${icon('edit', 13)} 编辑</button>
+                <button data-action="sync" data-id="${esc(c.id)}" title="引用卡片到对话">${icon('chat', 13)} 引用</button>
               </footer>
             </article>
           `;
         }).join('')}
       </div>
-      <div class="zoom">
-        <button data-zoom="-" aria-label="缩小">−</button>
-        <input id="zoom" type="range" min=".5" max="1.5" step=".05" value="${scale}" aria-label="画布缩放">
-        <button data-zoom="+" aria-label="放大">＋</button>
-        <b>${Math.round(scale * 100)}%</b>
-        <button data-fit>${icon('maximize', 12)} 适合</button>
-      </div>
+      <nav class="whiteboard-dock" aria-label="白板工具栏">
+        <button class="dock-btn icon-only" data-zoom="-" title="缩小 (Alt + -)">−</button>
+        <span class="dock-zoom-label">${Math.round(scale * 100)}%</span>
+        <button class="dock-btn icon-only" data-zoom="+" title="放大 (Alt + +)">＋</button>
+        <div class="dock-divider"></div>
+        <button class="dock-btn" data-fit title="缩放自适应全部卡片">${icon('maximize', 13)} 适应视口</button>
+        <button class="dock-btn" data-auto-layout title="一键网格整齐排列">${icon('layout', 13)} 一键对齐</button>
+        <button class="dock-btn ${showLinks ? 'active' : ''}" data-toggle-links title="切换卡片智能连线">${icon('link', 13)} ${showLinks ? '隐藏连线' : '显示连线'}</button>
+        <div class="dock-divider"></div>
+        <button class="dock-btn ${zenMode ? 'active' : ''}" data-zen title="专注模式（全白板）">${icon('sparkles', 13)} ${zenMode ? '退出专注' : '专注模式'}</button>
+      </nav>
     </section>
   `;
 
@@ -362,13 +471,42 @@ function setupLayoutControls() {
   if (saved.collapsed) {
     root.classList.add('sidebar-collapsed');
   }
+  const updateFloatingChatDock = () => {
+    let floatBtn = document.querySelector('.floating-chat-trigger');
+    if (root.classList.contains('chat-hidden') && !root.classList.contains('zen-mode')) {
+      if (!floatBtn) {
+        floatBtn = document.createElement('button');
+        floatBtn.className = 'floating-chat-trigger';
+        floatBtn.innerHTML = `${icon('chat', 15)} <span>展开对话</span>`;
+        floatBtn.onclick = () => {
+          root.classList.remove('chat-hidden');
+          chatToggle.textContent = '隐藏对话';
+          floatBtn.remove();
+          localStorage.setItem('pm-layout', JSON.stringify({ ...saved, chatHidden: false }));
+          showToast('已恢复对话面板', 'info');
+        };
+        root.querySelector('.canvas')?.appendChild(floatBtn);
+      }
+    } else {
+      floatBtn?.remove();
+    }
+  };
+
   const chatToggle = document.createElement('button');
   chatToggle.className = 'chat-visibility-toggle';
   chatToggle.textContent = saved.chatHidden ? '显示对话' : '隐藏对话';
   chatToggle.title = '切换中间对话栏';
   left?.append(chatToggle);
   if (saved.chatHidden) root.classList.add('chat-hidden');
-  chatToggle.onclick = () => { const hidden = root.classList.toggle('chat-hidden'); chatToggle.textContent = hidden ? '显示对话' : '隐藏对话'; localStorage.setItem('pm-layout', JSON.stringify({ ...saved, chatHidden: hidden })); };
+  updateFloatingChatDock();
+
+  chatToggle.onclick = () => {
+    const hidden = root.classList.toggle('chat-hidden');
+    chatToggle.textContent = hidden ? '显示对话' : '隐藏对话';
+    updateFloatingChatDock();
+    localStorage.setItem('pm-layout', JSON.stringify({ ...saved, chatHidden: hidden }));
+    showToast(hidden ? '对话已收起，白板已展开' : '已显示对话面板', 'info');
+  };
 
   toggle.onclick = () => {
     root.classList.toggle('sidebar-collapsed');
@@ -434,25 +572,52 @@ function enableCanvasEditing() {
       body.saveTimer = setTimeout(persistCards, 600);
     });
 
-    const preview = card.querySelector('[data-action="preview"]');
-    preview?.addEventListener('click', () => {
+    // 1. Fullscreen Reader Drawer
+    const readBtn = card.querySelector('[data-action="read"]');
+    readBtn?.addEventListener('click', () => {
+      openDeliverableDrawer(item);
+    });
+
+    // 2. One-click Copy Markdown
+    const copyBtn = card.querySelector('[data-action="copy"]');
+    copyBtn?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(item.body);
+        copyBtn.innerHTML = `${icon('check', 13)} 已复制`;
+        showToast(`已复制卡片「${item.title}」Markdown 内容`, 'success');
+        setTimeout(() => {
+          copyBtn.innerHTML = `${icon('copy', 13)} 复制`;
+        }, 1800);
+      } catch {
+        showToast('复制失败，请尝试在编辑模式手动复制', 'error');
+      }
+    });
+
+    // 3. In-place Edit
+    const editBtn = card.querySelector('[data-action="edit"]');
+    editBtn?.addEventListener('click', () => {
       const isEditing = body.contentEditable === 'true';
       body.contentEditable = isEditing ? 'false' : 'true';
       if (isEditing) {
         body.innerHTML = renderMarkdown(item.body);
-        preview.innerHTML = `${icon('edit', 13)} 编辑`;
+        editBtn.innerHTML = `${icon('edit', 13)} 编辑`;
+        showToast('已退出编辑模式并渲染排版', 'info');
       } else {
         body.innerText = item.body;
-        preview.innerHTML = `${icon('eye', 13)} 预览`;
+        editBtn.innerHTML = `${icon('eye', 13)} 预览`;
+        body.focus();
+        showToast('已进入编辑模式，可直接键入或粘贴', 'info');
       }
     });
 
+    // 4. Reference to chat
     const sync = card.querySelector('[data-action="sync"]');
     sync?.addEventListener('click', () => {
       const input = document.querySelector('#text');
       if (!input) return;
       input.value = `@${item.title} 请结合画板内容继续推演优化：`;
       input.focus();
+      showToast(`已在对话输入框引用「${item.title}」`, 'info');
     });
   });
 
@@ -657,43 +822,84 @@ function wire() {
     }
   };
 
+  const updateZoomDisplay = () => {
+    const label = document.querySelector('.dock-zoom-label');
+    if (label) label.textContent = `${Math.round(scale * 100)}%`;
+    const bEl = document.querySelector('#board');
+    if (bEl) bEl.style.transform = `translate(${pan.x}px,${pan.y}px) scale(${scale})`;
+  };
+
   // Zoom controls
   document.querySelectorAll('[data-zoom]').forEach(b => {
     b.onclick = () => {
-      scale = Math.max(0.4, Math.min(1.8, scale + (b.dataset.zoom === '+' ? 0.1 : -0.1)));
-      const bEl = document.querySelector('#board');
-      if (bEl) bEl.style.transform = `translate(${pan.x}px,${pan.y}px) scale(${scale})`;
-      const zoomInput = document.querySelector('#zoom');
-      if (zoomInput) zoomInput.value = scale;
-      const zoomText = document.querySelector('.zoom b');
-      if (zoomText) zoomText.textContent = `${Math.round(scale * 100)}%`;
+      scale = Math.max(0.35, Math.min(1.8, scale + (b.dataset.zoom === '+' ? 0.1 : -0.1)));
+      updateZoomDisplay();
     };
   });
-
-  const zoomSlider = document.querySelector('#zoom');
-  if (zoomSlider) {
-    zoomSlider.oninput = e => {
-      scale = Number(e.target.value);
-      const bEl = document.querySelector('#board');
-      if (bEl) bEl.style.transform = `translate(${pan.x}px,${pan.y}px) scale(${scale})`;
-      const zoomText = document.querySelector('.zoom b');
-      if (zoomText) zoomText.textContent = `${Math.round(scale * 100)}%`;
-    };
-  }
 
   const fitBtn = document.querySelector('[data-fit]');
   if (fitBtn) {
     fitBtn.onclick = () => {
-      scale = 0.85;
-      pan = { x: 40, y: 30 };
-      const bEl = document.querySelector('#board');
-      if (bEl) bEl.style.transform = `translate(${pan.x}px,${pan.y}px) scale(${scale})`;
-      const zoomInput = document.querySelector('#zoom');
-      if (zoomInput) zoomInput.value = scale;
-      const zoomText = document.querySelector('.zoom b');
-      if (zoomText) zoomText.textContent = `${Math.round(scale * 100)}%`;
+      if (!state.cards.length) {
+        scale = 1;
+        pan = { x: 30, y: 30 };
+      } else {
+        const minX = Math.min(...state.cards.map(c => c.x || 0));
+        const minY = Math.min(...state.cards.map(c => c.y || 0));
+        scale = 0.85;
+        pan = { x: Math.max(30, 40 - minX * scale), y: Math.max(30, 40 - minY * scale) };
+      }
+      updateZoomDisplay();
+      showToast('已自适应画板卡片视口', 'info');
     };
   }
+
+  const autoLayoutBtn = document.querySelector('[data-auto-layout]');
+  if (autoLayoutBtn) {
+    autoLayoutBtn.onclick = async () => {
+      if (!state.cards.length) return showToast('画布暂无卡片', 'info');
+      const startX = 40, startY = 40, colWidth = 500, rowHeight = 360, cols = Math.max(2, Math.floor((window.innerWidth - 600) / colWidth));
+      state.cards.forEach((c, idx) => {
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        c.x = startX + col * colWidth;
+        c.y = startY + row * rowHeight;
+      });
+      await persistCards();
+      render();
+      showToast('已一键整齐排版卡片', 'success');
+    };
+  }
+
+  const toggleLinksBtn = document.querySelector('[data-toggle-links]');
+  if (toggleLinksBtn) {
+    toggleLinksBtn.onclick = () => {
+      showLinks = !showLinks;
+      render();
+      showToast(showLinks ? '已开启卡片推演连线' : '已隐藏卡片连线', 'info');
+    };
+  }
+
+  const zenBtn = document.querySelector('[data-zen]');
+  if (zenBtn) {
+    zenBtn.onclick = () => {
+      zenMode = !zenMode;
+      const root = document.querySelector('#app');
+      root?.classList.toggle('zen-mode', zenMode);
+      render();
+      showToast(zenMode ? '已进入专注白板模式（按 Esc 或再次点击退出）' : '已退出专注模式', 'info');
+    };
+  }
+
+  window.onkeydown = e => {
+    if (e.key === 'Escape' && zenMode) {
+      zenMode = false;
+      const root = document.querySelector('#app');
+      root?.classList.remove('zen-mode');
+      render();
+      showToast('已退出专注模式', 'info');
+    }
+  };
 
   // Card close button
   document.querySelectorAll('[data-close]').forEach(b => {
@@ -701,16 +907,18 @@ function wire() {
       state.cards = state.cards.filter(c => c.id !== b.dataset.close);
       await persistCards();
       render();
+      showToast('已从画布移除卡片', 'info');
     };
   });
 
-  // Card dragging
+  // Card dragging with Miro feedback
   document.querySelectorAll('.card').forEach(element => {
     const header = element.querySelector('header');
     if (!header) return;
 
     header.onpointerdown = e => {
-      if (e.target.closest('.card-close-btn')) return;
+      if (e.target.closest('.card-close-btn') || e.target.closest('button')) return;
+      element.classList.add('card-dragging');
       drag = {
         element,
         id: element.dataset.id,
@@ -730,12 +938,18 @@ function wire() {
     };
 
     header.onpointerup = async () => {
+      element.classList.remove('card-dragging');
       if (!drag || drag.element !== element) return;
       const c = state.cards.find(card => card.id === drag.id);
       if (c) {
         c.x = position(parseFloat(element.style.left));
         c.y = position(parseFloat(element.style.top));
         await persistCards();
+        if (showLinks) {
+          // Re-render links smoothly
+          const wiresEl = document.querySelector('.board-wires');
+          if (wiresEl) wiresEl.outerHTML = boardWiresMarkup();
+        }
       }
       drag = null;
     };
