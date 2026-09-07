@@ -20,23 +20,58 @@ def get_card(client: WorkbenchClient, card_id: str) -> dict[str, Any] | None:
     return None
 
 
+def find_next_available_position(
+    existing_cards: list[dict[str, Any]],
+    preferred_x: int | float | None = None,
+    preferred_y: int | float | None = None,
+) -> tuple[float, float]:
+    card_width = 440
+    card_height = 360
+    gap = 30
+    start_x = 80
+    start_y = 80
+    max_cols = 3
+
+    def collides(x: float, y: float) -> bool:
+        for c in existing_cards:
+            cx = float(c.get("x", 0))
+            cy = float(c.get("y", 0))
+            if abs(cx - x) < (card_width + 10) and abs(cy - y) < (card_height + 10):
+                return True
+        return False
+
+    if preferred_x is not None and preferred_y is not None:
+        if not (preferred_x == 90 and preferred_y == 80):
+            if not collides(float(preferred_x), float(preferred_y)):
+                return float(preferred_x), float(preferred_y)
+
+    for row in range(50):
+        for col in range(max_cols):
+            slot_x = start_x + col * (card_width + gap)
+            slot_y = start_y + row * (card_height + gap)
+            if not collides(slot_x, slot_y):
+                return float(slot_x), float(slot_y)
+    return float(start_x), float(start_y)
+
+
 def add_card(
     client: WorkbenchClient,
     title: str,
     body: str,
-    x: int = 90,
-    y: int = 80,
+    x: int | float | None = None,
+    y: int | float | None = None,
     icon: str = "📄",
 ) -> dict[str, Any]:
     cards = list_cards(client)
+    final_x, final_y = find_next_available_position(cards, x, y)
     new_id = f"{int(time.time() * 1000)}-{len(cards)}"
     card = {
         "id": new_id,
         "title": title,
         "body": body,
         "icon": icon,
-        "x": x,
-        "y": y
+        "x": final_x,
+        "y": final_y,
     }
     updated_cards = [*cards, card]
     client.update_cards(updated_cards)

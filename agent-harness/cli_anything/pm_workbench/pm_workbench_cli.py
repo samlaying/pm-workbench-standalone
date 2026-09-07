@@ -360,11 +360,11 @@ def card_get(ctx: click.Context, card_id: str):
 @card.command("add")
 @click.option("--title", "-t", required=True, help="Card title.")
 @click.option("--body", "-b", required=True, help="Markdown body content.")
-@click.option("--x", type=int, default=90, help="X coordinate.")
-@click.option("--y", type=int, default=80, help="Y coordinate.")
+@click.option("--x", type=int, default=None, help="X coordinate (auto-calculated if omitted).")
+@click.option("--y", type=int, default=None, help="Y coordinate (auto-calculated if omitted).")
 @click.option("--icon", default="📄", help="Emoji icon.")
 @click.pass_context
-def card_add(ctx: click.Context, title: str, body: str, x: int, y: int, icon: str):
+def card_add(ctx: click.Context, title: str, body: str, x: int | None, y: int | None, icon: str):
     """Add a new card to the canvas."""
     client: WorkbenchClient = ctx.obj["client"]
     skin: ReplSkin = ctx.obj["skin"]

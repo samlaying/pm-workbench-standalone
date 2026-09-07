@@ -25,7 +25,7 @@ async function save(state) {
 
 try {
   let fileTimer;
-  watch(dataFile, () => {
+  const watcher = watch(dataFile, () => {
     clearTimeout(fileTimer);
     fileTimer = setTimeout(async () => {
       try {
@@ -34,6 +34,7 @@ try {
       } catch {}
     }, 150);
   });
+  if (watcher && typeof watcher.unref === 'function') watcher.unref();
 } catch {}
 function parseCredentialRefs(text) {
   const refs = {};
@@ -126,8 +127,29 @@ function createWorkflowQuestion(text) {
     { id: 'report', label: '直接做汇报', description: '优先生成面向汇报对象的结构化内容' },
   ] };
 }
+function findNextAvailablePosition(existingCards, preferredX, preferredY) {
+  const cardWidth = 440, cardHeight = 360, gap = 30, startX = 80, startY = 80, maxCols = 3;
+  function collides(x, y) {
+    return (existingCards || []).some(c => {
+      const cx = Number(c.x) || 0, cy = Number(c.y) || 0;
+      return Math.abs(cx - x) < (cardWidth + 10) && Math.abs(cy - y) < (cardHeight + 10);
+    });
+  }
+  if (preferredX != null && preferredY != null && (preferredX !== 90 || preferredY !== 80)) {
+    if (!collides(preferredX, preferredY)) return { x: preferredX, y: preferredY };
+  }
+  for (let row = 0; row < 50; row++) {
+    for (let col = 0; col < maxCols; col++) {
+      const slotX = startX + col * (cardWidth + gap);
+      const slotY = startY + row * (cardHeight + gap);
+      if (!collides(slotX, slotY)) return { x: slotX, y: slotY };
+    }
+  }
+  return { x: startX, y: startY };
+}
+
 function mergeSkillResults(results) {
-  return { text: results.map(result => `【${result.skill}】\n${result.text}`).join('\n\n'), cards: results.map((result, index) => ({ id: `skill-${index}`, icon: '▧', title: result.skill, body: result.text, x: 100 + (index % 3) * 390, y: 100 + Math.floor(index / 3) * 300 })) };
+  return { text: results.map(result => `【${result.skill}】\n${result.text}`).join('\n\n'), cards: results.map((result, index) => ({ id: `skill-${index}`, icon: '▧', title: result.skill, body: result.text, x: 80 + (index % 3) * 470, y: 80 + Math.floor(index / 3) * 390 })) };
 }
 function scanProject(path) {
   const items = [];
@@ -168,7 +190,13 @@ const server = createServer(async (req, res) => {
       workflow.review = buildMentorReview({ text: reply.text, cards: reply.cards }, workflow.skills);
       workflow.status = workflow.review.status === 'approved' ? 'approved' : 'needs_revision';
       if (reply.cards && reply.cards.length) {
-        state.cards = [...state.cards, ...reply.cards.map((c, i) => ({ id: `${Date.now()}-${i}`, ...c }))];
+        const newCards = [];
+        for (let i = 0; i < reply.cards.length; i++) {
+          const c = reply.cards[i];
+          const pos = findNextAvailablePosition([...state.cards, ...newCards], c.x, c.y);
+          newCards.push({ id: `${Date.now()}-${i}`, ...c, x: pos.x, y: pos.y });
+        }
+        state.cards = [...state.cards, ...newCards];
       }
       state.messages.push({ role: 'assistant', text: reply.text, at: Date.now() });
       await save(state);
