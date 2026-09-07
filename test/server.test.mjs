@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCredentialRefs, resolveModelConfig, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, buildDeliverableTemplate, analyzeProject, buildMemorySuggestions, createConversation, archiveConversation, projectCanvas } from '../server.mjs';
+import { parseCredentialRefs, resolveModelConfig, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, buildDeliverableTemplate, analyzeProject, buildMemorySuggestions, createConversation, archiveConversation, projectCanvas, buildProjectGraph } from '../server.mjs';
 test('project binding creates a real project navigation model', () => { const p = scanProject('/tmp/pm'); assert.equal(p.name, 'pm'); assert.deepEqual(p.items.map(x => x.name), ['文档', '会议', '工作记录']); });
 
 test('model config matches the working DSH cliproxy setup', () => {
@@ -107,3 +107,15 @@ test('generates standardized final deliverable template card for deliverable req
   assert.match(merged.text, /最终交付模版/);
 });
 
+test('builds a project requirement graph with an editable deliverable skeleton and agent links', () => {
+  const graph = buildProjectGraph({ id: 'p1', name: 'Demo' }, '写一份 PRD', 'chat-1', [
+    { skill: 'prd-writer', text: '范围与验收' },
+    { skill: 'project-context-maintainer', text: '项目决策与风险' }
+  ], [{ id: 'card-1', title: 'PRD 骨架', body: '目标\n范围' }]);
+  assert.equal(graph.projectId, 'p1');
+  assert.equal(graph.requirement.title, '写一份 PRD');
+  assert.equal(graph.conversation.id, 'chat-1');
+  assert.ok(graph.nodes.some(node => node.type === 'deliverable')); 
+  assert.ok(graph.nodes.some(node => node.type === 'memory')); 
+  assert.ok(graph.edges.some(edge => edge.kind === 'agent_link'));
+});

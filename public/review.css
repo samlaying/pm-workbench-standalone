@@ -199,6 +199,30 @@ button {
 .sidebar-collapsed .chat-visibility-toggle { display: none; }
 .cross-canvas-button { margin-left: auto; padding: 6px 10px; border: 1px solid #d6deeb; border-radius: 8px; background: #fff; color: #526174; cursor: pointer; }
 .cross-canvas-button:hover { border-color: #9cb5ff; color: #4267e8; }
+.canvas-view-tabs { display:flex; gap:4px; margin-left:auto; padding:3px; border:1px solid #e2e7ef; border-radius:9px; background:#f7f9fc; }
+.canvas-view-tab { border:0; border-radius:6px; padding:5px 9px; background:transparent; color:#687589; cursor:pointer; font-size:12px; }
+.canvas-view-tab.active { background:#fff; color:#3159c9; box-shadow:0 1px 3px #172b4d18; }
+.hidden { display:none !important; }
+.project-graph { height:100%; overflow:auto; padding:22px 26px 80px; background:radial-gradient(circle at 20% 10%,#f4f7ff,transparent 38%),#fbfcfe; }
+.graph-summary { display:flex; align-items:center; gap:12px; margin-bottom:18px; color:#25334a; }
+.graph-summary span { color:#7b8798; font-size:12px; }
+.graph-node-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; max-width:1000px; }
+.graph-viewport { position:relative; min-height:calc(100vh - 180px); overflow:hidden; cursor:grab; border:1px solid #e4eaf3; border-radius:14px; background-image:radial-gradient(#dce4f0 1px,transparent 1px); background-size:22px 22px; }
+.graph-viewport:active { cursor:grabbing; }
+.graph-world { position:relative; width:1800px; height:1500px; transform-origin:0 0; }
+.graph-wires { position:absolute; inset:0; pointer-events:none; overflow:visible; }
+.graph-wire { fill:none; stroke:#a6b6df; stroke-width:2; stroke-dasharray:5 4; }
+.graph-wire-contains { stroke:#6f89db; stroke-width:2.5; stroke-dasharray:none; }
+.graph-world .graph-node { position:absolute; width:280px; box-sizing:border-box; min-height:104px; cursor:pointer; }
+.graph-empty { position:absolute; left:30px; top:30px; }
+.graph-node { min-height:72px; padding:13px; border:1px solid #dce4ef; border-radius:12px; background:#fff; box-shadow:0 4px 14px #172b4d0b; }
+.graph-node div { display:flex; flex-direction:column; gap:7px; }
+.graph-node b { font-size:13px; color:#26344b; line-height:1.4; }
+.graph-node small { display:block; margin-top:10px; color:#8190a4; font-size:11px; }
+.graph-node-type { width:max-content; padding:2px 6px; border-radius:5px; background:#edf2ff; color:#4d66bb; font-size:10px; }
+.graph-node-deliverable { border-color:#b9c8ff; background:#f8faff; }
+.graph-node-memory { border-color:#f0d4a3; background:#fffaf1; }
+.graph-edge-list { max-width:700px; margin-top:22px; padding:13px 15px; border-left:3px solid #9eb2ee; color:#64738a; font-size:12px; line-height:1.8; background:#fff; border-radius:0 10px 10px 0; }
 .card-source-badge { display: inline-flex; align-items: center; padding: 1px 6px; border-radius: 9999px; font-size: 10px; font-weight: 500; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; margin-left: 4px; white-space: nowrap; flex-shrink: 0; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
 
 button:disabled {

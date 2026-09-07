@@ -1,5 +1,5 @@
 const app = document.querySelector('#app');
-let state = { projects: [], messages: [], cards: [] }, scale = 1, pan = { x: 0, y: 0 }, drag = null, panning = null, sending = false;
+let state = { projects: [], messages: [], cards: [], graph: { nodes: [], edges: [] } }, scale = 1, pan = { x: 0, y: 0 }, drag = null, panning = null, sending = false, canvasMode = 'conversation';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const position = value => Number.isFinite(Number(value)) ? Math.max(-2000, Math.min(5000, Number(value))) : 0;
@@ -120,6 +120,13 @@ function formatInline(str) {
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color:var(--accent-600);">$1</a>');
   return s;
+}
+
+function graphMarkup(graph) {
+  const nodes = graph?.nodes || [], edges = graph?.edges || [], byId = new Map(nodes.map(node => [node.id, node]));
+  const wires = edges.map(edge => { const a = byId.get(edge.source), b = byId.get(edge.target); if (!a || !b) return ''; const p = a.position || { x: 0, y: 0 }, q = b.position || { x: 0, y: 0 }; return '<path class="graph-wire" d="M ' + (p.x + 280) + ' ' + (p.y + 52) + ' C ' + (p.x + 360) + ' ' + (p.y + 52) + ', ' + (q.x - 80) + ' ' + (q.y + 52) + ', ' + q.x + ' ' + (q.y + 52) + '" marker-end="url(#graph-arrow)"><title>' + esc(edge.reason || 'Agent 上下文关联') + '</title></path>'; }).join('');
+  const cards = nodes.map(node => { const p = node.position || { x: 0, y: 0 }; return '<article class="graph-node graph-node-' + esc(node.type || 'analysis') + '" data-graph-node="' + esc(node.id) + '" style="left:' + position(p.x) + 'px;top:' + position(p.y) + 'px"><div><span class="graph-node-type">' + esc(node.type || 'analysis') + '</span><b>' + esc(node.title || '未命名节点') + '</b></div><small>' + esc(node.skill || node.status || '') + '</small></article>'; }).join('');
+  return '<div class="graph-viewport" id="graph-viewport"><div class="graph-world" id="graph-world" style="transform:translate(' + pan.x + 'px,' + pan.y + 'px) scale(' + scale + ')"><svg class="graph-wires" width="1800" height="1500"><defs><marker id="graph-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#a6b6df"/></marker></defs>' + wires + '</svg>' + (cards || '<p class="muted graph-empty">输入一个明确需求后，Agent 会自动生成项目需求图。</p>') + '</div></div>';
 }
 
 function showError(message) {
@@ -263,8 +270,20 @@ function render() {
           <b>PM 画板</b>
           <span>${esc(state.projectPath || '未关联项目')}</span>
         </div>
+        <div class="canvas-view-tabs" role="tablist">
+          <button class="canvas-view-tab ${canvasMode === 'conversation' ? 'active' : ''}" data-canvas-view="conversation">当前对话</button>
+          <button class="canvas-view-tab ${canvasMode === 'project' ? 'active' : ''}" data-canvas-view="project">项目需求图</button>
+        </div>
       </div>
-      <div id="board" class="board" style="transform:translate(${pan.x}px,${pan.y}px) scale(${scale})">
+      <div id="project-graph" class="project-graph ${canvasMode === 'project' ? '' : 'hidden'}">
+        <div class="graph-summary"><b>项目需求图</b><span>${(state.graph?.nodes || []).length} 个节点 · ${(state.graph?.edges || []).length} 条 Agent 关联</span></div>
+       <div class="graph-node-list">
+         ${(state.graph?.nodes || []).map(node => `<article class="graph-node graph-node-${esc(node.type || 'analysis')}" data-graph-node="${esc(node.id)}"><div><span class="graph-node-type">${esc(node.type || 'analysis')}</span><b>${esc(node.title || '未命名节点')}</b></div><small>${esc(node.skill || node.status || '')}</small></article>`).join('') || '<p class="muted">输入一个明确需求后，Agent 会自动生成项目需求图。</p>'}
+       </div>
+        ${graphMarkup(state.graph)}
+        ${(state.graph?.edges || []).length ? `<div class="graph-edge-list"><b>Agent 自动关联</b>${state.graph.edges.slice(-8).map(edge => `<div>↳ ${esc(edge.kind)} · ${esc(edge.reason || '上下文关联')}</div>`).join('')}</div>` : ''}
+      </div>
+      <div id="board" class="board ${canvasMode === 'project' ? 'hidden' : ''}" style="transform:translate(${pan.x}px,${pan.y}px) scale(${scale})">
         ${state.cards.map(raw => {
           const c = cardData(raw);
           const badge = c.skillLabel || c.skill ? `<span class="card-agent-badge">${esc(c.skillLabel || c.skill)}</span>` : '';
@@ -456,6 +475,9 @@ async function persistCards() {
 }
 
 function wire() {
+  document.querySelectorAll('[data-canvas-view]').forEach(button => {
+    button.onclick = () => { canvasMode = button.dataset.canvasView; render(); };
+  });
   const canvasHead = document.querySelector('.canvas-head');
   if (canvasHead && !canvasHead.querySelector('[data-cross-canvas]')) {
     const button = document.createElement('button'); button.dataset.crossCanvas = 'true'; button.className = 'cross-canvas-button'; button.textContent = '跨对话画板'; canvasHead.append(button);
@@ -518,6 +540,27 @@ function wire() {
     });
 
     board.addEventListener('pointerup', () => { panning = null; });
+  }
+
+  const graphViewport = document.querySelector('#graph-viewport');
+  const graphWorld = document.querySelector('#graph-world');
+  if (graphViewport && graphWorld) {
+    graphViewport.addEventListener('wheel', event => {
+      event.preventDefault();
+      scale = Math.max(0.4, Math.min(1.8, scale * (event.deltaY < 0 ? 1.08 : 0.92)));
+      graphWorld.style.transform = `translate(${pan.x}px,${pan.y}px) scale(${scale})`;
+    }, { passive: false });
+    graphViewport.addEventListener('pointerdown', event => {
+      if (event.target.closest('.graph-node')) return;
+      panning = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y };
+      graphViewport.setPointerCapture(event.pointerId);
+    });
+    graphViewport.addEventListener('pointermove', event => {
+      if (!panning) return;
+      pan = { x: panning.panX + event.clientX - panning.x, y: panning.panY + event.clientY - panning.y };
+      graphWorld.style.transform = `translate(${pan.x}px,${pan.y}px) scale(${scale})`;
+    });
+    graphViewport.addEventListener('pointerup', () => { panning = null; });
   }
 
   const handleNewChat = async (projectPath) => {
@@ -593,12 +636,16 @@ function wire() {
           if (!line.startsWith('data: ')) continue;
           let data;
           try { data = JSON.parse(line.slice(6)); } catch { continue; }
-          if (data.type === 'question') showQuestion(data.question);
+          if (data.type === 'question') state.pendingQuestion = data.question;
           if (data.type === 'text') reply += String(data.text || '');
           if (data.type === 'cards') state.cards = data.cards.map(cardData);
           if (data.type === 'error') throw new Error(data.message || '模型响应异常');
         }
         if (chunk.done) break;
+      }
+      if (!reply && !state.pendingQuestion) {
+        const snapshot = await (await request('/api/state')).json();
+        if (snapshot.workflow?.status === 'awaiting_confirmation') state.pendingQuestion = snapshot.workflow.question;
       }
       if (reply) state.messages.push({ role: 'assistant', text: reply });
     } catch (error) {

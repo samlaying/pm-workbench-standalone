@@ -403,6 +403,25 @@ function analyzeProject(project, request = '') {
 function buildMemorySuggestions(results) {
   return results.filter(result => /决定|风险|偏好|承诺|行动/.test(result.text || '')).map(result => ({ target: /人物|老板|客户/.test(result.text) ? 'person' : 'project', sourceSkill: result.skill, content: result.text, requiresConfirmation: true }));
 }
+function buildProjectGraph(project, request, conversationId, results = [], cards = []) {
+  const now = Date.now();
+  const projectId = project?.id || project?.name || 'unbound-project';
+  const requirement = { id: `requirement-${now}`, projectId, type: 'requirement', title: String(request || '未命名需求').slice(0, 80), status: 'active', createdAt: now };
+  const conversation = { id: conversationId || `conversation-${now}`, projectId, type: 'conversation', title: String(request || '新对话').slice(0, 32), createdAt: now };
+  const nodes = [requirement, conversation];
+  const edges = [
+    { id: `edge-${now}-requirement`, source: requirement.id, target: conversation.id, kind: 'contains', createdBy: 'agent' }
+  ];
+  const addNode = (node, parent = conversation) => {
+    nodes.push(node);
+    edges.push({ id: `edge-${now}-${edges.length}`, source: parent.id, target: node.id, kind: 'agent_link', createdBy: 'agent', reason: `由 ${node.skill || node.type} 产生` });
+  };
+  cards.forEach((card, index) => addNode({ id: `deliverable-${now}-${index}`, projectId, conversationId: conversation.id, type: /模版|模板|PRD|汇报|纪要/.test(card.title || '') ? 'deliverable' : 'analysis', title: card.title, content: card.body, skill: card.skill, status: /模版|模板/.test(card.title || '') ? 'skeleton' : 'draft', position: { x: 520 + (index % 3) * 360, y: 140 + Math.floor(index / 3) * 280 }, createdAt: now }));
+  results.forEach((result, index) => addNode({ id: `skill-${now}-${index}`, projectId, conversationId: conversation.id, type: 'analysis', title: result.skill, content: result.text, skill: result.skill, status: 'complete', position: { x: 100 + (index % 3) * 360, y: 480 + Math.floor(index / 3) * 280 }, createdAt: now }));
+  const memoryResults = buildMemorySuggestions(results);
+  memoryResults.forEach((memory, index) => addNode({ id: `memory-${now}-${index}`, projectId, conversationId: conversation.id, type: 'memory', title: `${memory.target === 'person' ? '人物' : '项目'}记忆候选`, content: memory.content, skill: memory.sourceSkill, status: 'needs_confirmation', requiresConfirmation: true, position: { x: 100 + index * 360, y: 900 }, createdAt: now }));
+  return { projectId, requirement, conversation, nodes, edges, updatedAt: now };
+}
 function scanProject(path) {
   const items = [];
   const walk = (dir, depth = 0) => { if (depth > 2) return; for (const name of readdirSync(dir, { withFileTypes: true })) { if (name.name.startsWith('.')) continue; const full = join(dir, name.name); if (name.isDirectory()) walk(full, depth + 1); else if (/\.(md|txt|xml)$/i.test(name.name)) items.push({ id: full, name: name.name, path: full, type: 'document' }); } };
@@ -451,6 +470,9 @@ const server = createServer(async (req, res) => {
         }
         state.cards = [...state.cards, ...newCards];
       }
+      const graph = buildProjectGraph(state.projects?.[0], workflow.request, state.currentConversationId || 'main', results, reply.cards);
+      const existingGraph = state.graph || { projectId: graph.projectId, nodes: [], edges: [] };
+      state.graph = { ...graph, nodes: [...existingGraph.nodes, ...graph.nodes], edges: [...existingGraph.edges, ...graph.edges], updatedAt: Date.now() };
       state.messages.push({ role: 'assistant', text: reply.text, at: Date.now() });
       await save(state);
       return json(res, 200, { workflow, cards: state.cards, text: reply.text });
@@ -476,4 +498,4 @@ const server = createServer(async (req, res) => {
   }
 });
 if (process.argv[1] === new URL(import.meta.url).pathname) server.listen(Number(process.env.PORT || 4317), '127.0.0.1', () => console.log(`PM Workbench: http://127.0.0.1:${process.env.PORT || 4317}`));
-export { parseCredentialRefs, resolveModelConfig, server, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, buildDeliverableTemplate, analyzeProject, buildMemorySuggestions, createConversation, archiveConversation, projectCanvas, loadProjectContext, modelReply };
+export { parseCredentialRefs, resolveModelConfig, server, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, buildDeliverableTemplate, analyzeProject, buildMemorySuggestions, buildProjectGraph, createConversation, archiveConversation, projectCanvas, loadProjectContext, modelReply };
