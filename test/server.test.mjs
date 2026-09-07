@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCredentialRefs, resolveModelConfig, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, analyzeProject, buildMemorySuggestions, createConversation, archiveConversation, projectCanvas } from '../server.mjs';
+import { parseCredentialRefs, resolveModelConfig, scanProject, classifyFile, selectSkills, buildMentorReview, createWorkflowQuestion, mergeSkillResults, buildDeliverableTemplate, analyzeProject, buildMemorySuggestions, createConversation, archiveConversation, projectCanvas } from '../server.mjs';
 test('project binding creates a real project navigation model', () => { const p = scanProject('/tmp/pm'); assert.equal(p.name, 'pm'); assert.deepEqual(p.items.map(x => x.name), ['文档', '会议', '工作记录']); });
 
 test('model config matches the working DSH cliproxy setup', () => {
@@ -83,3 +83,27 @@ test('project canvas exposes cards across conversations with source metadata', (
   const state = { currentConversationId: 'current', cards: [{ id: 'now' }], conversations: [{ id: 'old', title: '旧对话', cards: [{ id: 'old-card' }] }] };
   assert.equal(projectCanvas(state).find(card => card.id === 'old-card').sourceConversationTitle, '旧对话');
 });
+
+test('generates standardized final deliverable template card for deliverable requests', () => {
+  const template = buildDeliverableTemplate('调研一下不同产品，接入 飞书/企业微信/微信/钉钉 这些渠道的流程和能力差异');
+  assert.ok(template);
+  assert.match(template.title, /最终交付模版/);
+  assert.match(template.body, /评估矩阵/);
+  assert.match(template.body, /汇报/);
+  assert.match(template.body, /分工/);
+
+  const merged = mergeSkillResults([
+    { skill: 'task-arrangement-planner', text: '任务分工与推进节奏' },
+    { skill: 'project-context-maintainer', text: '系统上下文与记忆沉淀' },
+    { skill: 'ai-pm-prd-builder', text: '渠道能力差异矩阵' }
+  ], '你俩分一下，调研一下不同产品，接入 飞书/企业微信/微信/钉钉 这些渠道的流程和能力差异');
+
+  assert.equal(merged.cards.length, 4);
+  const templateCard = merged.cards.find(c => c.skill === 'deliverable-template');
+  assert.ok(templateCard);
+  assert.equal(templateCard.skillLabel, '最终交付模版');
+  assert.equal(templateCard.icon, '📐');
+  assert.match(templateCard.title, /最终交付模版/);
+  assert.match(merged.text, /最终交付模版/);
+});
+

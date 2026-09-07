@@ -325,6 +325,31 @@ def test_multi_agent_merge_skill_results():
     assert merged["cards"][2]["icon"] == "🤖"
 
 
+def test_deliverable_template_generation():
+    from cli_anything.pm_workbench.core.client import build_deliverable_template, merge_skill_results
+
+    tmpl = build_deliverable_template("你俩分一下，调研一下不同产品，接入 飞书/企业微信/微信/钉钉 这些渠道的流程和能力差异")
+    assert tmpl is not None
+    assert "最终交付模版" in tmpl["title"]
+    assert "评估矩阵" in tmpl["body"]
+    assert "汇报" in tmpl["body"]
+    assert "分工" in tmpl["body"]
+
+    results = [
+        {"skill": "task-arrangement-planner", "text": "分工与推进计划"},
+        {"skill": "project-context-maintainer", "text": "系统上下文与边界记忆"},
+        {"skill": "ai-pm-prd-builder", "text": "渠道能力差异矩阵"},
+    ]
+    merged = merge_skill_results(results, "调研一下不同产品接入飞书/企业微信/微信/钉钉的流程和能力差异")
+    assert len(merged["cards"]) == 4
+    tmpl_card = next(c for c in merged["cards"] if c.get("skill") == "deliverable-template")
+    assert tmpl_card["skillLabel"] == "最终交付模版"
+    assert tmpl_card["icon"] == "📐"
+    assert "最终交付模版" in tmpl_card["title"]
+    assert "最终交付模版" in merged["text"]
+
+
+
 def test_cross_conversation_project_cards(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     from cli_anything.pm_workbench.core.canvas import list_project_cards, import_card
 
