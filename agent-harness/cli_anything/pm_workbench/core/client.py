@@ -68,7 +68,63 @@ def select_skills(text: str) -> list[str]:
         skills.append("meeting-coach")
     if re.search(r"ai|agent|大模型", text, re.IGNORECASE):
         skills.append("ai-pm-prd-builder")
+    if re.search(r"调研|差异|渠道|对比|接入", text):
+        skills.append("task-arrangement-planner")
+        skills.append("project-context-maintainer")
+        skills.append("ai-pm-prd-builder")
     return list(dict.fromkeys(skills if skills else ["project-context-maintainer"]))
+
+
+SKILL_META = {
+    "task-arrangement-planner": {"label": "任务拆解与分工", "icon": "📋"},
+    "project-context-maintainer": {"label": "项目背景与决策记忆", "icon": "🧠"},
+    "ai-pm-prd-builder": {"label": "产品能力与矩阵契约", "icon": "🤖"},
+    "prd-writer": {"label": "需求与业务流程PRD", "icon": "📄"},
+    "prd-review-handler": {"label": "评审修改与验收标准", "icon": "✅"},
+    "update-writer": {"label": "进展同步与风险通报", "icon": "📢"},
+    "meeting-notes-organizer": {"label": "会议纪要与行动项", "icon": "📝"},
+    "meeting-coach": {"label": "沟通表现与复盘画像", "icon": "🎯"},
+}
+
+
+def merge_skill_results(results: list[dict[str, Any]]) -> dict[str, Any]:
+    all_cards = []
+    text_sections = []
+    for idx, r in enumerate(results):
+        skill = r.get("skill", "agent")
+        meta = SKILL_META.get(skill, {"label": skill, "icon": "▧"})
+        text = r.get("text", "")
+        text_sections.append(f"【{skill}】\n{text}")
+
+        cards = r.get("cards")
+        if cards and isinstance(cards, list):
+            for c_idx, c in enumerate(cards):
+                all_cards.append({
+                    "id": f"skill-{idx}-{c_idx}",
+                    "skill": skill,
+                    "skillLabel": meta["label"],
+                    "icon": c.get("icon") or meta["icon"],
+                    "title": c.get("title") or f"【{meta['label']}】产出模块",
+                    "body": c.get("body") or text,
+                    "x": 80 + (len(all_cards) % 3) * 470,
+                    "y": 80 + (len(all_cards) // 3) * 390,
+                })
+        else:
+            all_cards.append({
+                "id": f"skill-{idx}",
+                "skill": skill,
+                "skillLabel": meta["label"],
+                "icon": meta["icon"],
+                "title": f"【{meta['label']}】交付模块",
+                "body": text,
+                "x": 80 + (len(all_cards) % 3) * 470,
+                "y": 80 + (len(all_cards) // 3) * 390,
+            })
+
+    return {
+        "text": "\n\n".join(text_sections),
+        "cards": all_cards,
+    }
 
 
 def analyze_project(project: dict[str, Any] | None, request: str = "") -> dict[str, Any]:

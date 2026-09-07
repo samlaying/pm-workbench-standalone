@@ -113,6 +113,11 @@ function selectSkills(text) {
   if (/汇报|通知|周报|同步|风险/.test(text)) skills.push('update-writer');
   if (/复盘|沟通表现/.test(text)) skills.push('meeting-coach');
   if (/ai|agent|大模型/i.test(text)) skills.push('ai-pm-prd-builder');
+  if (/调研|差异|渠道|对比|接入/.test(text)) {
+    skills.push('task-arrangement-planner');
+    skills.push('project-context-maintainer');
+    skills.push('ai-pm-prd-builder');
+  }
   return [...new Set(skills.length ? skills : ['project-context-maintainer'])];
 }
 function buildMentorReview(result, skills) {
@@ -150,8 +155,51 @@ function findNextAvailablePosition(existingCards, preferredX, preferredY) {
   return { x: startX, y: startY };
 }
 
+const skillMeta = {
+  'task-arrangement-planner': { label: '任务拆解与分工', icon: '📋' },
+  'project-context-maintainer': { label: '项目背景与决策记忆', icon: '🧠' },
+  'ai-pm-prd-builder': { label: '产品能力与矩阵契约', icon: '🤖' },
+  'prd-writer': { label: '需求与业务流程PRD', icon: '📄' },
+  'prd-review-handler': { label: '评审修改与验收标准', icon: '✅' },
+  'update-writer': { label: '进展同步与风险通报', icon: '📢' },
+  'meeting-notes-organizer': { label: '会议纪要与行动项', icon: '📝' },
+  'meeting-coach': { label: '沟通表现与复盘画像', icon: '🎯' },
+};
+
 function mergeSkillResults(results) {
-  return { text: results.map(result => `【${result.skill}】\n${result.text}`).join('\n\n'), cards: results.map((result, index) => ({ id: `skill-${index}`, icon: '▧', title: result.skill, body: result.text, x: 80 + (index % 3) * 470, y: 80 + Math.floor(index / 3) * 390 })) };
+  const allCards = [];
+  results.forEach((result, idx) => {
+    const meta = skillMeta[result.skill] || { label: result.skill, icon: '▧' };
+    if (result.cards && Array.isArray(result.cards) && result.cards.length > 0) {
+      result.cards.forEach((card, cIdx) => {
+        allCards.push({
+          id: `skill-${idx}-${cIdx}`,
+          skill: result.skill,
+          skillLabel: meta.label,
+          icon: card.icon || meta.icon,
+          title: card.title || `【${meta.label}】产出模块`,
+          body: card.body || result.text || '',
+          x: 80 + (allCards.length % 3) * 470,
+          y: 80 + Math.floor(allCards.length / 3) * 390
+        });
+      });
+    } else {
+      allCards.push({
+        id: `skill-${idx}`,
+        skill: result.skill,
+        skillLabel: meta.label,
+        icon: meta.icon,
+        title: `【${meta.label}】交付模块`,
+        body: result.text || '',
+        x: 80 + (allCards.length % 3) * 470,
+        y: 80 + Math.floor(allCards.length / 3) * 390
+      });
+    }
+  });
+  return {
+    text: results.map(result => `【${result.skill}】\n${result.text}`).join('\n\n'),
+    cards: allCards
+  };
 }
 function analyzeProject(project, request = '') {
   const items = project?.items || [];

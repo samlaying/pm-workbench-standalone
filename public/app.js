@@ -267,12 +267,14 @@ function render() {
       <div id="board" class="board" style="transform:translate(${pan.x}px,${pan.y}px) scale(${scale})">
         ${state.cards.map(raw => {
           const c = cardData(raw);
+          const badge = c.skillLabel || c.skill ? `<span class="card-agent-badge">${esc(c.skillLabel || c.skill)}</span>` : '';
           return `
             <article class="card" data-id="${esc(c.id)}" style="left:${c.x}px;top:${c.y}px">
               <header>
                 <div class="card-title-group">
-                  ${icon('file-text', 14)}
+                  <span class="card-icon">${c.icon ? esc(c.icon) : icon('file-text', 14)}</span>
                   <b>${esc(c.title)}</b>
+                  ${badge}
                 </div>
                 <button class="card-close-btn" data-close="${esc(c.id)}" aria-label="关闭卡片">${icon('x', 14)}</button>
               </header>

@@ -302,3 +302,27 @@ def test_build_memory_suggestions():
     assert suggestions[1]["requiresConfirmation"] is True
 
 
+def test_multi_agent_merge_skill_results():
+    from cli_anything.pm_workbench.core.client import merge_skill_results, select_skills
+
+    skills = select_skills("你俩分一下，调研一下不同产品，接入 飞书/企业微信/微信/钉钉 这些渠道的流程和能力差异")
+    assert "task-arrangement-planner" in skills
+    assert "project-context-maintainer" in skills
+    assert "ai-pm-prd-builder" in skills
+
+    results = [
+        {"skill": "task-arrangement-planner", "text": "分工与推进计划"},
+        {"skill": "project-context-maintainer", "text": "系统上下文与边界记忆"},
+        {"skill": "ai-pm-prd-builder", "text": "渠道能力差异矩阵"},
+    ]
+    merged = merge_skill_results(results)
+    assert len(merged["cards"]) == 3
+    assert merged["cards"][0]["skillLabel"] == "任务拆解与分工"
+    assert merged["cards"][1]["skillLabel"] == "项目背景与决策记忆"
+    assert merged["cards"][2]["skillLabel"] == "产品能力与矩阵契约"
+    assert merged["cards"][0]["icon"] == "📋"
+    assert merged["cards"][1]["icon"] == "🧠"
+    assert merged["cards"][2]["icon"] == "🤖"
+
+
+

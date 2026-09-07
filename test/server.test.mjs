@@ -36,10 +36,28 @@ test('workflow creates a structured confirmation question before execution', () 
   assert.equal(question.options.length, 3);
 });
 
-test('parallel skill results merge into a document and canvas cards', () => {
-  const merged = mergeSkillResults([{ skill: 'prd-writer', text: '目标、范围、验收' }, { skill: 'update-writer', text: '进展与风险' }]);
-  assert.match(merged.text, /prd-writer/);
-  assert.equal(merged.cards.length, 2);
+test('parallel skill results merge into modular canvas cards with metadata', () => {
+  const merged = mergeSkillResults([
+    { skill: 'task-arrangement-planner', text: '任务分工与推进节奏' },
+    { skill: 'project-context-maintainer', text: '系统上下文与记忆沉淀' },
+    { skill: 'ai-pm-prd-builder', text: '渠道能力差异矩阵' }
+  ]);
+  assert.match(merged.text, /task-arrangement-planner/);
+  assert.equal(merged.cards.length, 3);
+  assert.equal(merged.cards[0].skillLabel, '任务拆解与分工');
+  assert.equal(merged.cards[1].skillLabel, '项目背景与决策记忆');
+  assert.equal(merged.cards[2].skillLabel, '产品能力与矩阵契约');
+  assert.equal(merged.cards[0].icon, '📋');
+  assert.equal(merged.cards[1].icon, '🧠');
+  assert.equal(merged.cards[2].icon, '🤖');
+});
+
+test('complex channel research decomposes into multiple complementary PM agents', () => {
+  const skills = selectSkills('你俩分一下，调研一下不同产品，接入 飞书/企业微信/微信/钉钉 这些渠道的流程和能力差异');
+  assert.ok(skills.includes('task-arrangement-planner'));
+  assert.ok(skills.includes('project-context-maintainer'));
+  assert.ok(skills.includes('ai-pm-prd-builder'));
+  assert.ok(skills.length >= 3);
 });
 
 test('proactive analyzer recommends work from project files and request', () => {
@@ -60,3 +78,4 @@ test('new conversations preserve messages and canvas as one record', () => {
   assert.equal(state.conversations.length, 1);
   assert.equal(state.conversations[0].cards[0].title, 'PRD');
 });
+
