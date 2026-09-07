@@ -143,6 +143,7 @@ const server = createServer(async (req, res) => {
       return json(res, 200, { workflow, cards: state.cards, text: reply.text });
     }
     if (req.method === 'POST' && url.pathname === '/api/cards') { const input = await body(req); const state = await load(); state.cards = input.cards || []; await save(state); return json(res, 200, state.cards); }
+    if (req.method === 'POST' && url.pathname === '/api/chat/new') { const state = await load(); state.messages = []; state.workflow = null; await save(state); return json(res, 200, state); }
     if (req.method === 'GET') { const file = url.pathname === '/' ? '/index.html' : url.pathname; try { const content = await readFile(join(root, 'public', file)); const type = file.endsWith('.css') ? 'text/css' : file.endsWith('.js') ? 'text/javascript' : 'text/html'; res.writeHead(200, { 'content-type': `${type}; charset=utf-8`, 'cache-control': 'no-cache' }); return res.end(content); } catch {} }
     json(res, 404, { error: 'Not found' });
   } catch (error) {

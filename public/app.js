@@ -185,9 +185,21 @@ function render() {
         <section class="project">
           <div class="project-title-bar">
             <span class="project-name">${icon('folder', 14)} ${esc(p.name)}</span>
-            <button class="btn-open-canvas" data-bind="${esc(p.path)}">${icon('maximize', 12)} 画布</button>
+            <div class="project-actions">
+              <button class="btn-project-action btn-primary" data-new-chat="${esc(p.path)}" title="在当前项目发起新对话">${icon('plus', 12)} 新对话</button>
+              <button class="btn-project-action" data-bind="${esc(p.path)}" title="在画板聚焦此项目">${icon('maximize', 12)} 画布</button>
+            </div>
           </div>
           <div class="project-items">
+            <div class="project-item-group">
+              <div class="project-item-header" style="justify-content:space-between;">
+                <span style="display:flex;align-items:center;gap:4px;">${icon('chevronDown', 12)} 会话</span>
+                <button class="btn-item-action" data-new-chat="${esc(p.path)}" title="新增对话">${icon('plus', 11)} 新对话</button>
+              </div>
+              <div class="project-chat-item active" data-new-chat="${esc(p.path)}" title="点击切换或新建对话">
+                <span>· 主会话 ${state.messages.length ? `(${state.messages.length}条)` : '（新）'}</span>
+              </div>
+            </div>
             <div class="project-item-group">
               <div class="project-item-header">${icon('chevronDown', 12)} 需求点</div>
               <div class="project-subitem">· V1 范围定义与定位转折</div>
@@ -216,6 +228,9 @@ function render() {
           <strong>需求工作台</strong>
           <span>对话推演</span>
         </div>
+        <button id="btn-header-new-chat" class="btn-new-chat-header" title="开启新对话">
+          ${icon('plus', 13)} 新建对话
+        </button>
       </header>
       <div id="messages" class="messages">
         ${state.messages.map(m => `
@@ -488,6 +503,44 @@ function wire() {
     });
 
     board.addEventListener('pointerup', () => { panning = null; });
+  }
+
+  const handleNewChat = async (projectPath) => {
+    if (projectPath && projectPath !== state.projectPath) {
+      try {
+        state = await (await request('/api/bind', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ path: projectPath })
+        })).json();
+      } catch {}
+    }
+    try {
+      const res = await request('/api/chat/new', { method: 'POST' });
+      const next = await res.json();
+      state = { ...state, ...next };
+      render();
+      const textarea = document.querySelector('#text');
+      if (textarea) {
+        textarea.value = '';
+        textarea.focus();
+      }
+      showError('已开启新会话，可以开始推演新的需求。');
+    } catch (err) {
+      showError(`新建会话失败：${err.message}`);
+    }
+  };
+
+  document.querySelectorAll('[data-new-chat]').forEach(button => {
+    button.onclick = e => {
+      e.stopPropagation();
+      handleNewChat(button.dataset.newChat);
+    };
+  });
+
+  const headerNewChat = document.querySelector('#btn-header-new-chat');
+  if (headerNewChat) {
+    headerNewChat.onclick = () => handleNewChat(state.projectPath);
   }
 
   document.querySelectorAll('[data-bind]').forEach(button => {
