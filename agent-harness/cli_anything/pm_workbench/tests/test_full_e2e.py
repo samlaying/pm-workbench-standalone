@@ -97,6 +97,12 @@ class TestClickRunnerE2E:
         assert res.exit_code == 0
         assert json.loads(res.output)["workflow"]["status"] == "approved"
 
+        # Test chat new
+        res = runner.invoke(cli, ["--offline", "--json", "chat", "new"])
+        assert res.exit_code == 0
+        chat_data = json.loads(res.output)
+        assert chat_data["messages"] == []
+
 
 
 class TestCLISubprocess:

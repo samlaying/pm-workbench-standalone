@@ -21,3 +21,7 @@ def clear_chat_history(client: WorkbenchClient) -> dict[str, Any]:
     state["messages"] = []
     client.save_local_state(state)
     return {"status": "cleared", "messages": []}
+
+
+def new_chat_session(client: WorkbenchClient) -> dict[str, Any]:
+    return client.new_chat()

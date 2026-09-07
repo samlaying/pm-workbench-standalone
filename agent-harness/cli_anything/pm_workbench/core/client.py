@@ -250,11 +250,27 @@ class WorkbenchClient:
             except Exception:
                 pass
         state = self.load_local_state()
-        workflow = state.get("workflow", {})
+        workflow = state.get("workflow") or {}
         workflow["status"] = "approved"
         workflow["answer"] = answer
+        state["workflow"] = workflow
         self.save_local_state(state)
         return {"workflow": workflow, "cards": state.get("cards", [])}
+
+    def new_chat(self) -> dict[str, Any]:
+        """Start a new chat session by clearing conversation history and resetting workflow."""
+        if self.is_server_available() and not self.dry_run:
+            try:
+                resp = requests.post(f"{self.base_url}/api/chat/new", timeout=10.0)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception:
+                pass
+        state = self.load_local_state()
+        state["messages"] = []
+        state["workflow"] = None
+        self.save_local_state(state)
+        return state
 
     def send_message(self, text: str, auto_answer: str = "draft") -> dict[str, Any]:
         """Send message and receive response and generated cards."""

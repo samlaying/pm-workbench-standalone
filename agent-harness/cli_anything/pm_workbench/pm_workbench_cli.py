@@ -30,6 +30,7 @@ from cli_anything.pm_workbench.core.project import (
 from cli_anything.pm_workbench.core.session import (
     clear_chat_history,
     get_chat_history,
+    new_chat_session,
     send_chat_message,
 )
 from cli_anything.pm_workbench.utils.repl_skin import ReplSkin
@@ -139,6 +140,24 @@ def project_scan(ctx: click.Context):
             rows = [[it.get("name"), it.get("path")] for it in items[:15]]
             if rows:
                 skin.table(["文档名", "路径"], rows)
+
+    print_output(ctx, result, show)
+
+
+@project.command("new-chat")
+@click.option("--path", "-p", type=click.Path(), help="Project directory to bind before starting new chat.")
+@click.pass_context
+def project_new_chat(ctx: click.Context, path: str | None):
+    """Start a new chat session under a project."""
+    client: WorkbenchClient = ctx.obj["client"]
+    skin: ReplSkin = ctx.obj["skin"]
+    if path:
+        bind_project(client, path)
+    result = new_chat_session(client)
+
+    def show(res):
+        skin.success(f"已在项目下开启新对话: {res.get('projectPath') or '(未绑定)'}")
+        skin.status("画板卡片数量", str(len(res.get("cards", []))))
 
     print_output(ctx, result, show)
 
@@ -257,6 +276,25 @@ def chat_clear(ctx: click.Context):
 
     def show(_):
         skin.success("已清空所有对话历史")
+
+    print_output(ctx, result, show)
+
+
+@chat.command("new")
+@click.option("--project", "-p", type=click.Path(), help="Project directory to bind before starting new chat.")
+@click.pass_context
+def chat_new(ctx: click.Context, project: str | None):
+    """Start a new conversation session (clears messages, resets workflow)."""
+    client: WorkbenchClient = ctx.obj["client"]
+    skin: ReplSkin = ctx.obj["skin"]
+    if project:
+        bind_project(client, project)
+    result = new_chat_session(client)
+
+    def show(res):
+        skin.success("已开启新会话，可以开始推演新的需求")
+        skin.status("绑定项目", res.get("projectPath") or "(未绑定)")
+        skin.status("画板卡片数量", str(len(res.get("cards", []))))
 
     print_output(ctx, result, show)
 

@@ -211,3 +211,20 @@ def test_workflow_answer(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     assert res["workflow"]["status"] == "approved"
     assert res["workflow"]["answer"] == "deep"
 
+
+def test_new_chat_session(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    from cli_anything.pm_workbench.core.session import new_chat_session
+
+    mock_data_file = tmp_path / "data" / "workspace.json"
+    monkeypatch.setattr("cli_anything.pm_workbench.core.client.get_data_file", lambda: mock_data_file)
+
+    client = WorkbenchClient(force_local=True)
+    state = client.load_local_state()
+    state["messages"] = [{"role": "user", "text": "hello"}]
+    state["workflow"] = {"status": "running"}
+    client.save_local_state(state)
+
+    res = new_chat_session(client)
+    assert res["messages"] == []
+    assert res["workflow"] is None
+
